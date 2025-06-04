@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>שירת הגוף</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+      background-color: #f0f0f0;
+      text-align: center;
+    }
+    iframe {
+      width: 90%;
+      height: 700px;
+      border: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    a.download {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #007acc;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>שירת הגוף</h1>
+  <p>כאן תוכלו לקרוא ולהוריד את הספרון בפורמט PDF</p>
+  
+  <iframe src="booklet.pdf"></iframe>
+
+  <br>
+  <a class="download" href="booklet.pdf" download>הורדת הקובץ</a>
+</body>
+</html>
