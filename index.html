@@ -123,7 +123,7 @@
             };
 
             return (
-                <div className="fixed inset-x-0 bottom-0 top-14 z-[100] bg-black/98 flex flex-col items-center justify-between p-2 md:p-3 overflow-hidden text-right">
+                <div className="fixed inset-x-0 bottom-0 top-14 z-[100] bg-black flex flex-col items-center justify-between p-2 md:p-3 overflow-hidden text-right">
                     {/* ההדר העליון - הלוגו והכותרת הוסרו למניעת כפילות */}
                     <div className="w-full max-w-7xl flex justify-between items-center px-4 py-2 border-b border-white/5">
                         <button onClick={onClose} className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/10 text-sm">
@@ -556,7 +556,7 @@
 
                     {/* תוכן עניינים */}
                     {tocOpen && data && (
-                        <div className="fixed inset-x-0 top-[6.5rem] bottom-0 z-40 bg-black/98 overflow-y-auto custom-scrollbar animate-fade-in">
+                        <div className="fixed inset-x-0 top-[6.5rem] bottom-0 z-40 bg-black overflow-y-auto custom-scrollbar animate-fade-in">
                             <div className="max-w-3xl mx-auto px-4 py-6">
                                 {data.parts.map(part => {
                                     const named = part.blocks.filter(b => b.name);
