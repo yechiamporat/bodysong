@@ -6,6 +6,8 @@
 - `images/` – הלוגו ו-29 עמודי הספרון.
 - `netlify/functions/inspire.mjs` – "השראה אישית מפרק שירה": פונה ל-Gemini מצד השרת.
 - `booklet.pdf` – הספרון בפורמט PDF.
+- `booklet.json` – טקסט הספרון לתצוגת הקריאה. נוצר מקובץ הוורד:
+  `python3 tools/build_booklet_json.py "שירת הגוף.docx" booklet.json` (דורש `pip install python-docx`).
 
 ## הגדרה בנטליפיי
 
