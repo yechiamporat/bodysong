@@ -41,6 +41,10 @@ const NAV_ITEMS = [{
   label: 'שירת הגוף',
   href: '/shirat-haguf/'
 }, {
+  id: 'inspire',
+  label: 'השראה',
+  href: '/hashraa/'
+}, {
   id: 'practice',
   label: 'תרגול',
   href: '/tirgul/'
@@ -235,7 +239,10 @@ const matchOrgan = (lib, input) => {
   return best === null ? null : lib[best];
 };
 const lastVariant = {};
-const BodyInspiration = () => {
+const INSPIRE_EXAMPLES = ['לב', 'עיניים', 'ידיים', 'נשימה', 'ראש', 'בטן', 'גב', 'רגליים'];
+const BodyInspiration = ({
+  standalone = false
+}) => {
   const [input, setInput] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -244,11 +251,12 @@ const BodyInspiration = () => {
   useEffect(() => {
     loadInspiration().then(lib => setNames(lib.map(o => o.name)));
   }, []);
-  const generate = async () => {
-    if (!input.trim()) return;
+  const generate = async text => {
+    const q = (typeof text === 'string' ? text : input).trim();
+    if (!q) return;
     setError("");
     const lib = await loadInspiration();
-    const organ = lib.length ? matchOrgan(lib, input) : null;
+    const organ = lib.length ? matchOrgan(lib, q) : null;
     if (organ) {
       // גרסה אחרת מזו שהוצגה בפעם הקודמת לאותו אבר
       const n = organ.variants.length;
@@ -272,7 +280,7 @@ const BodyInspiration = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          input: input.trim()
+          input: q
         })
       });
       const data = await response.json().catch(() => ({}));
@@ -285,8 +293,8 @@ const BodyInspiration = () => {
     }
   };
   return /*#__PURE__*/React.createElement("div", {
-    className: "bg-stone-900/40 border border-white/5 rounded-2xl p-6 md:p-8 mt-12 text-right shadow-xl relative overflow-hidden"
-  }, /*#__PURE__*/React.createElement("h3", {
+    className: `bg-stone-900/40 border border-white/5 rounded-2xl p-6 md:p-8 ${standalone ? '' : 'mt-12'} text-right shadow-xl relative overflow-hidden`
+  }, !standalone && /*#__PURE__*/React.createElement("h3", {
     className: "text-xl md:text-2xl font-serif font-bold mb-4 flex items-center gap-3 justify-end text-white"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Sparkles",
@@ -305,10 +313,21 @@ const BodyInspiration = () => {
     placeholder: "\u05D0\u05D9\u05D6\u05D4 \u05D0\u05D9\u05D1\u05E8 \u05D0\u05D5 \u05EA\u05D7\u05D5\u05E9\u05D4 \u05DE\u05D1\u05E7\u05E9\u05D9\u05DD \u05E9\u05D9\u05E8\u05D4?",
     className: "flex-grow bg-black/60 border border-white/10 rounded-full px-6 py-3 text-white text-base focus:outline-none focus:ring-1 focus:ring-stone-600 transition-all text-right shadow-inner"
   }), /*#__PURE__*/React.createElement("button", {
-    onClick: generate,
+    onClick: () => generate(),
     disabled: loading || !input.trim(),
     className: "bg-stone-200 text-black font-bold px-8 py-2.5 rounded-full text-base hover:bg-white transition-all disabled:opacity-50 min-w-[120px]"
-  }, loading ? "מתבונן..." : "גלה את השירה")), /*#__PURE__*/React.createElement("datalist", {
+  }, loading ? "מתבונן..." : "גלה את השירה")), standalone && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-4 text-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-stone-500 py-1.5"
+  }, "\u05DC\u05D3\u05D5\u05D2\u05DE\u05D4:"), INSPIRE_EXAMPLES.map(n => /*#__PURE__*/React.createElement("button", {
+    key: n,
+    onClick: () => {
+      setInput(n);
+      generate(n);
+    },
+    className: "px-3 py-1.5 rounded-full bg-black/40 border border-white/10 text-stone-300 hover:text-white hover:border-white/30"
+  }, n))), /*#__PURE__*/React.createElement("datalist", {
     id: "organ-names"
   }, names.map(n => /*#__PURE__*/React.createElement("option", {
     key: n,
@@ -335,7 +354,7 @@ const BodyInspiration = () => {
     href: `/shirat-haguf/#${result.organId}`,
     className: "text-stone-300 underline underline-offset-4 hover:text-white"
   }, "\u05DC\"", result.organTitle, "\" \u05D1\u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement("button", {
-    onClick: generate,
+    onClick: () => generate(),
     className: "px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5"
   }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA"))));
 };
@@ -621,6 +640,9 @@ const App = ({
     href: "/shirat-haguf/",
     className: "px-10 py-3 bg-white text-black rounded-full text-lg font-bold hover:bg-stone-100 transition-all shadow-md active:scale-95 text-center"
   }, "\u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement("a", {
+    href: "/hashraa/",
+    className: "px-10 py-3 bg-black text-white border border-white/20 rounded-full text-lg font-bold hover:bg-white/5 transition-all text-center active:scale-95"
+  }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05D0\u05D9\u05E9\u05D9\u05EA"), /*#__PURE__*/React.createElement("a", {
     href: "/tirgul/",
     className: "px-10 py-3 bg-black text-white border border-white/20 rounded-full text-lg font-bold hover:bg-white/5 transition-all text-center active:scale-95"
   }, "\u05EA\u05E8\u05D2\u05D5\u05DC \u05D5\u05DE\u05D7\u05E9\u05D1\u05D4"))), view === 'practice' && /*#__PURE__*/React.createElement("div", {
@@ -650,7 +672,28 @@ const App = ({
   }, section.content.map((p, pIdx) => /*#__PURE__*/React.createElement("p", {
     key: pIdx,
     className: "mb-4 text-lg text-stone-400 font-light last:mb-0 leading-relaxed text-right"
-  }, p))))))), /*#__PURE__*/React.createElement(BodyInspiration, null)), view === 'about' && /*#__PURE__*/React.createElement("div", {
+  }, p))))))), /*#__PURE__*/React.createElement("a", {
+    href: "/hashraa/",
+    className: "mt-12 flex items-center justify-between gap-4 bg-stone-900/40 border border-white/5 rounded-2xl p-6 md:p-8 text-right shadow-xl hover:border-white/20 transition-colors"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    className: "text-xl md:text-2xl font-serif font-bold mb-2 flex items-center gap-3 text-white"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Sparkles",
+    size: 20,
+    className: "text-stone-400"
+  }), " \u05D4\u05E9\u05E8\u05D0\u05D4 \u05D0\u05D9\u05E9\u05D9\u05EA \u05DE\u05E4\u05E8\u05E7 \u05E9\u05D9\u05E8\u05D4"), /*#__PURE__*/React.createElement("p", {
+    className: "text-stone-400 font-light"
+  }, "\u05D1\u05D7\u05E8\u05D5 \u05D0\u05D1\u05E8 \u05D0\u05D5 \u05EA\u05D7\u05D5\u05E9\u05D4, \u05D5\u05E7\u05D1\u05DC\u05D5 \u05E4\u05E1\u05D5\u05E7 \u05DE\u05D4\u05E9\u05D9\u05E8\u05D4, \u05D4\u05E9\u05E8\u05D0\u05D4 \u05D5\u05EA\u05E8\u05D2\u05D5\u05DC \u05E7\u05E6\u05E8.")), /*#__PURE__*/React.createElement("span", {
+    className: "text-white text-2xl shrink-0"
+  }, "\u2190"))), view === 'inspire' && /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 py-16 text-right"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-4xl font-serif font-bold text-center mb-4 text-white tracking-tight"
+  }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05D0\u05D9\u05E9\u05D9\u05EA \u05DE\u05E4\u05E8\u05E7 \u05E9\u05D9\u05E8\u05D4"), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-stone-400 font-light text-center mb-10 leading-relaxed"
+  }, "\u05DB\u05EA\u05D1\u05D5 \u05D0\u05D1\u05E8 \u05D1\u05D2\u05D5\u05E3 \u05D0\u05D5 \u05EA\u05D7\u05D5\u05E9\u05D4 \u05E9\u05DE\u05D1\u05E7\u05E9\u05EA \u05EA\u05E9\u05D5\u05DE\u05EA \u05DC\u05D1, \u05D5\u05E7\u05D1\u05DC\u05D5 \u05E4\u05E1\u05D5\u05E7 \u05DE\u05EA\u05D5\u05DA \u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3, \u05DE\u05D9\u05DC\u05D9\u05DD \u05E9\u05DC \u05D4\u05E9\u05E8\u05D0\u05D4 \u05D5\u05EA\u05E8\u05D2\u05D5\u05DC \u05E0\u05D5\u05DB\u05D7\u05D5\u05EA \u05E7\u05E6\u05E8."), /*#__PURE__*/React.createElement(BodyInspiration, {
+    standalone: true
+  })), view === 'about' && /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto px-4 py-16 text-center text-right"
   }, /*#__PURE__*/React.createElement(Logo, {
     className: "w-16 h-16 mx-auto mb-8 shadow-md"

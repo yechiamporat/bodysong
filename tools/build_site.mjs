@@ -98,6 +98,12 @@ const pages = [
     jsonld: (url, d) => textPage('תיקון הנפש', url, d),
   },
   {
+    file: 'hashraa/index.html', path: '/hashraa/', route: { view: 'inspire' },
+    title: 'השראה אישית מפרק שירה – פסוק, השראה ותרגול לכל אבר | שירת הגוף',
+    description: 'כתבו אבר בגוף או תחושה – לב, נשימה, עיניים, כאב ראש – וקבלו פסוק מתוך שירת הגוף, מילים של השראה ותרגול נוכחות קצר.',
+    jsonld: (url, d) => [{ '@type': 'WebPage', name: 'השראה אישית מפרק שירה', url, description: d, inLanguage: 'he', isPartOf: website }, breadcrumb('השראה אישית', url)],
+  },
+  {
     file: 'tirgul/index.html', path: '/tirgul/', route: { view: 'practice' },
     title: 'פרקי תרגול ומחשבה – הקשבה לגוף | שירת הגוף',
     description: 'מי אני ומה היחס שלי לגוף שלי? תרגילי השקטה והקשבה לגוף ולאברים, צלם אלוהים, ובין שירת הגוף לשירת הבריאה – פרקי תרגול ומחשבה.',

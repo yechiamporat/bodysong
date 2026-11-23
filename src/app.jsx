@@ -14,6 +14,7 @@
         const NAV_ITEMS = [
             { id: 'home', label: 'בית', href: '/' },
             { id: 'song', label: 'שירת הגוף', href: '/shirat-haguf/' },
+            { id: 'inspire', label: 'השראה', href: '/hashraa/' },
             { id: 'practice', label: 'תרגול', href: '/tirgul/' },
             { id: 'about', label: 'אודות', href: '/odot/' }
         ];
@@ -402,7 +403,9 @@
         };
         const lastVariant = {};
 
-        const BodyInspiration = () => {
+        const INSPIRE_EXAMPLES = ['לב', 'עיניים', 'ידיים', 'נשימה', 'ראש', 'בטן', 'גב', 'רגליים'];
+
+        const BodyInspiration = ({ standalone = false }) => {
             const [input, setInput] = useState('');
             const [result, setResult] = useState(null);
             const [loading, setLoading] = useState(false);
@@ -411,11 +414,12 @@
             const [names, setNames] = useState([]);
             useEffect(() => { loadInspiration().then(lib => setNames(lib.map(o => o.name))); }, []);
 
-            const generate = async () => {
-                if (!input.trim()) return;
+            const generate = async (text) => {
+                const q = (typeof text === 'string' ? text : input).trim();
+                if (!q) return;
                 setError("");
                 const lib = await loadInspiration();
-                const organ = lib.length ? matchOrgan(lib, input) : null;
+                const organ = lib.length ? matchOrgan(lib, q) : null;
                 if (organ) {
                     // גרסה אחרת מזו שהוצגה בפעם הקודמת לאותו אבר
                     const n = organ.variants.length;
@@ -432,7 +436,7 @@
                     const response = await fetch('/api/inspire', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ input: input.trim() })
+                        body: JSON.stringify({ input: q })
                     });
                     const data = await response.json().catch(() => ({}));
                     if (!response.ok) throw new Error(data.error || "לא הצלחנו לקבל השראה כרגע. נסו שוב בעוד רגע.");
@@ -443,20 +447,30 @@
             };
 
             return (
-                <div className="bg-stone-900/40 border border-white/5 rounded-2xl p-6 md:p-8 mt-12 text-right shadow-xl relative overflow-hidden">
-                    <h3 className="text-xl md:text-2xl font-serif font-bold mb-4 flex items-center gap-3 justify-end text-white">
-                        <Icon name="Sparkles" size={20} className="text-stone-400" /> השראה אישית מפרק שירה
-                    </h3>
+                <div className={`bg-stone-900/40 border border-white/5 rounded-2xl p-6 md:p-8 ${standalone ? '' : 'mt-12'} text-right shadow-xl relative overflow-hidden`}>
+                    {!standalone && (
+                        <h3 className="text-xl md:text-2xl font-serif font-bold mb-4 flex items-center gap-3 justify-end text-white">
+                            <Icon name="Sparkles" size={20} className="text-stone-400" /> השראה אישית מפרק שירה
+                        </h3>
+                    )}
                     <div className="flex flex-col sm:flex-row gap-3 relative z-10 text-right">
                         <input type="text" value={input} onChange={(e) => setInput(e.target.value)} list="organ-names"
                                onKeyDown={(e) => { if (e.key === 'Enter') generate(); }}
                                placeholder="איזה איבר או תחושה מבקשים שירה?" 
                                className="flex-grow bg-black/60 border border-white/10 rounded-full px-6 py-3 text-white text-base focus:outline-none focus:ring-1 focus:ring-stone-600 transition-all text-right shadow-inner" />
-                        <button onClick={generate} disabled={loading || !input.trim()} 
+                        <button onClick={() => generate()} disabled={loading || !input.trim()} 
                                 className="bg-stone-200 text-black font-bold px-8 py-2.5 rounded-full text-base hover:bg-white transition-all disabled:opacity-50 min-w-[120px]">
                             {loading ? "מתבונן..." : "גלה את השירה"}
                         </button>
                     </div>
+                    {standalone && (
+                        <div className="flex flex-wrap gap-2 mt-4 text-sm">
+                            <span className="text-stone-500 py-1.5">לדוגמה:</span>
+                            {INSPIRE_EXAMPLES.map(n => (
+                                <button key={n} onClick={() => { setInput(n); generate(n); }} className="px-3 py-1.5 rounded-full bg-black/40 border border-white/10 text-stone-300 hover:text-white hover:border-white/30">{n}</button>
+                            ))}
+                        </div>
+                    )}
                     <datalist id="organ-names">{names.map(n => <option key={n} value={n} />)}</datalist>
                     {error && <p className="mt-4 text-red-400 text-right text-sm font-bold">{error}</p>}
                     {result && (
@@ -476,7 +490,7 @@
                             {result.organId && (
                                 <div className="flex flex-wrap justify-between items-center gap-3 text-sm">
                                     <a href={`/shirat-haguf/#${result.organId}`} className="text-stone-300 underline underline-offset-4 hover:text-white">ל"{result.organTitle}" בשירת הגוף</a>
-                                    <button onClick={generate} className="px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5">השראה נוספת</button>
+                                    <button onClick={() => generate()} className="px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5">השראה נוספת</button>
                                 </div>
                             )}
                         </div>
@@ -676,7 +690,7 @@
                                 <div className="mb-8 animate-fade-in relative"><Logo className="w-32 h-32 md:w-48 md:h-48 shadow-lg" /></div>
                                 <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 font-serif tracking-tighter leading-none uppercase text-right md:text-center">שירת הגוף</h1>
                                 <p className="text-xl md:text-2xl text-stone-500 max-w-2xl mb-12 font-serif italic font-light px-2 text-right md:text-center leading-relaxed">"לשמוע ולהקשיב לשירת גופי אליך"</p>
-                                <div className="flex flex-col md:flex-row gap-5 text-right"><a href="/shirat-haguf/" className="px-10 py-3 bg-white text-black rounded-full text-lg font-bold hover:bg-stone-100 transition-all shadow-md active:scale-95 text-center">שירת הגוף</a><a href="/tirgul/" className="px-10 py-3 bg-black text-white border border-white/20 rounded-full text-lg font-bold hover:bg-white/5 transition-all text-center active:scale-95">תרגול ומחשבה</a></div>
+                                <div className="flex flex-col md:flex-row gap-5 text-right"><a href="/shirat-haguf/" className="px-10 py-3 bg-white text-black rounded-full text-lg font-bold hover:bg-stone-100 transition-all shadow-md active:scale-95 text-center">שירת הגוף</a><a href="/hashraa/" className="px-10 py-3 bg-black text-white border border-white/20 rounded-full text-lg font-bold hover:bg-white/5 transition-all text-center active:scale-95">השראה אישית</a><a href="/tirgul/" className="px-10 py-3 bg-black text-white border border-white/20 rounded-full text-lg font-bold hover:bg-white/5 transition-all text-center active:scale-95">תרגול ומחשבה</a></div>
                             </div>
                         )}
 
@@ -698,7 +712,21 @@
                                         </div>
                                     ))}
                                 </div>
-                                <BodyInspiration />
+                                <a href="/hashraa/" className="mt-12 flex items-center justify-between gap-4 bg-stone-900/40 border border-white/5 rounded-2xl p-6 md:p-8 text-right shadow-xl hover:border-white/20 transition-colors">
+                                    <div>
+                                        <h3 className="text-xl md:text-2xl font-serif font-bold mb-2 flex items-center gap-3 text-white"><Icon name="Sparkles" size={20} className="text-stone-400" /> השראה אישית מפרק שירה</h3>
+                                        <p className="text-stone-400 font-light">בחרו אבר או תחושה, וקבלו פסוק מהשירה, השראה ותרגול קצר.</p>
+                                    </div>
+                                    <span className="text-white text-2xl shrink-0">←</span>
+                                </a>
+                            </div>
+                        )}
+
+                        {view === 'inspire' && (
+                            <div className="max-w-3xl mx-auto px-4 py-16 text-right">
+                                <h1 className="text-4xl font-serif font-bold text-center mb-4 text-white tracking-tight">השראה אישית מפרק שירה</h1>
+                                <p className="text-lg text-stone-400 font-light text-center mb-10 leading-relaxed">כתבו אבר בגוף או תחושה שמבקשת תשומת לב, וקבלו פסוק מתוך שירת הגוף, מילים של השראה ותרגול נוכחות קצר.</p>
+                                <BodyInspiration standalone />
                             </div>
                         )}
 
