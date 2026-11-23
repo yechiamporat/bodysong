@@ -2,8 +2,13 @@
 
 קוד האתר https://shirathaguf.netlify.app
 
-- `index.html` – האתר כולו (React בתוך הדף).
-- `images/` – הלוגו ו-29 עמודי הספרון.
+- `src/app.jsx` – קוד האתר (React). **כאן עורכים.**
+- `src/template.html` – תבנית העמוד (head, עיצוב, סקריפטים).
+- `tools/build_site.mjs` – בונה מהמקור את `app.js` ואת כל העמודים עם הטקסט כבר בתוכם:
+  `index.html`, `shirat-haguf/`, `nishmat-kol-chai/`, `shirat-habriah/`, `tikun-hanefesh/`, `tirgul/`, `odot/`,
+  וגם `sitemap.xml` ו-`robots.txt`. הקבצים האלה נוצרים אוטומטית – לא לערוך אותם ידנית.
+  הרצה: `cd tools && npm install && npm run build`, ואז commit לכל הקבצים שהשתנו.
+- `images/` – הלוגו, תמונת השיתוף ו-29 עמודי הספרון.
 - `netlify/functions/inspire.mjs` – "השראה אישית מפרק שירה": פונה ל-Gemini מצד השרת.
 - `booklet.pdf` – הספרון בפורמט PDF.
 - `booklet.json` – טקסט הספרון לתצוגת הקריאה. נוצר מקובץ הוורד:
