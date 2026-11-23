@@ -195,16 +195,75 @@ const practiceData = [{
   title: "9. תרגול שירת הגוף והבריאה",
   content: [`נתחיל מאיפה שהפסקנו בתרגול השני`, `הגוף כולו,`, `ואני כולי,`, `נכלל`, `באחד`, `ודבק`, `באלהים.`, `נתחיל לקרוא בשירת הבריאה,`, `שמיים אומרים "שמים מספרים כבוד אל"...`, `ארץ אומרת "לה' הארץ ומלואה"...`, `וכו'....`, `נתבונן ונחוש איך "גופו" של הקב"ה שר`, `וננסה להדביק שוב כל "איבר"`, `בסוד של אחד.`, `הגוף שלי`, `עם`, `שמיים`, `ארץ`, `כוכבים`, `אש ומים`, `עצים`, `וצמחים`, `ציפורים`, `חיות`, `ואדם`, `כולם`, `נכללים`, `באחד`, `ודבקים`, `באלהים.`]
 }];
+
+// ===== ספריית ההשראה המוכנה מראש (inspiration.json) =====
+// מבקר שמקליד אבר או תחושה מוכרים מקבל תשובה מהספרייה מיד, בלי AI ובלי מכסה.
+// רק הקלדה שלא מתאימה לאף אבר נשלחת ל-Gemini דרך /api/inspire.
+let inspirationLib = null;
+const loadInspiration = () => {
+  if (!inspirationLib) {
+    inspirationLib = typeof fetch === 'function' ? fetch('/inspiration.json').then(r => r.json()).catch(() => {
+      inspirationLib = null;
+      return [];
+    }) : Promise.resolve([]);
+  }
+  return inspirationLib;
+};
+const normHe = t => (t || '').normalize('NFKD').replace(/[\u0591-\u05C7]/g, '').replace(/[^\u05D0-\u05EAa-z0-9 ]/gi, ' ').replace(/\s+/g, ' ').trim();
+const PREFIX = /^[הובלמשכ]/;
+const matchOrgan = (lib, input) => {
+  const q = normHe(input);
+  if (!q) return null;
+  const tokens = q.split(' ');
+  const forms = [...new Set([q, tokens.map(t => t.length > 2 ? t.replace(PREFIX, '') : t).join(' ')])];
+  let best = null,
+    bestScore = 0;
+  lib.forEach((o, oi) => {
+    for (const kw of o.keywords) {
+      const k = normHe(kw);
+      if (!k) continue;
+      for (const f of forms) {
+        let sc = 0;
+        if (f === k) sc = 1000 + k.length;else if ((' ' + f + ' ').includes(' ' + k + ' ')) sc = 500 + k.length;else if (f.length >= 3 && k.includes(f)) sc = 200 + f.length;
+        if (sc > bestScore) {
+          bestScore = sc;
+          best = oi;
+        }
+      }
+    }
+  });
+  return best === null ? null : lib[best];
+};
+const lastVariant = {};
 const BodyInspiration = () => {
   const [input, setInput] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [names, setNames] = useState([]);
+  useEffect(() => {
+    loadInspiration().then(lib => setNames(lib.map(o => o.name)));
+  }, []);
   const generate = async () => {
     if (!input.trim()) return;
+    setError("");
+    const lib = await loadInspiration();
+    const organ = lib.length ? matchOrgan(lib, input) : null;
+    if (organ) {
+      // גרסה אחרת מזו שהוצגה בפעם הקודמת לאותו אבר
+      const n = organ.variants.length;
+      let i = Math.floor(Math.random() * n);
+      if (n > 1 && i === lastVariant[organ.id]) i = (i + 1) % n;
+      lastVariant[organ.id] = i;
+      setResult({
+        ...organ.variants[i],
+        organId: organ.id,
+        organTitle: organ.title || organ.name
+      });
+      return;
+    }
     setLoading(true);
     setResult(null);
-    setError("");
     try {
       // הקריאה ל-Gemini מתבצעת בשרת (netlify/functions/inspire.mjs) – המפתח לא נמצא בדף
       const response = await fetch('/api/inspire', {
@@ -239,13 +298,22 @@ const BodyInspiration = () => {
     type: "text",
     value: input,
     onChange: e => setInput(e.target.value),
+    list: "organ-names",
+    onKeyDown: e => {
+      if (e.key === 'Enter') generate();
+    },
     placeholder: "\u05D0\u05D9\u05D6\u05D4 \u05D0\u05D9\u05D1\u05E8 \u05D0\u05D5 \u05EA\u05D7\u05D5\u05E9\u05D4 \u05DE\u05D1\u05E7\u05E9\u05D9\u05DD \u05E9\u05D9\u05E8\u05D4?",
     className: "flex-grow bg-black/60 border border-white/10 rounded-full px-6 py-3 text-white text-base focus:outline-none focus:ring-1 focus:ring-stone-600 transition-all text-right shadow-inner"
   }), /*#__PURE__*/React.createElement("button", {
     onClick: generate,
     disabled: loading || !input.trim(),
     className: "bg-stone-200 text-black font-bold px-8 py-2.5 rounded-full text-base hover:bg-white transition-all disabled:opacity-50 min-w-[120px]"
-  }, loading ? "מתבונן..." : "גלה את השירה")), error && /*#__PURE__*/React.createElement("p", {
+  }, loading ? "מתבונן..." : "גלה את השירה")), /*#__PURE__*/React.createElement("datalist", {
+    id: "organ-names"
+  }, names.map(n => /*#__PURE__*/React.createElement("option", {
+    key: n,
+    value: n
+  }))), error && /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-red-400 text-right text-sm font-bold"
   }, error), result && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 space-y-4 animate-fade-in text-right relative z-10"
@@ -253,13 +321,23 @@ const BodyInspiration = () => {
     className: "bg-white/5 p-5 rounded-xl border-r-4 border-stone-600 text-right shadow-lg"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xl md:text-2xl font-serif italic text-white leading-relaxed text-right"
-  }, "\"", result.verse, "\"")), /*#__PURE__*/React.createElement("div", {
+  }, "\"", result.verse, "\""), result.source && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm text-stone-500 text-right"
+  }, "(", result.source, ")")), /*#__PURE__*/React.createElement("div", {
     className: "p-6 bg-white/[0.01] rounded-xl border border-white/5 text-right shadow-md"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-lg text-stone-300 leading-relaxed mb-4 font-light text-right"
   }, result.inspiration), /*#__PURE__*/React.createElement("div", {
     className: "pt-4 border-t border-white/5 text-lg text-white italic font-serif text-right"
-  }, result.meditation))));
+  }, result.meditation)), result.organId && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap justify-between items-center gap-3 text-sm"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: `/shirat-haguf/#${result.organId}`,
+    className: "text-stone-300 underline underline-offset-4 hover:text-white"
+  }, "\u05DC\"", result.organTitle, "\" \u05D1\u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement("button", {
+    onClick: generate,
+    className: "px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5"
+  }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA"))));
 };
 
 // ===== שירת הגוף כטקסט (מתוך booklet.json) =====
