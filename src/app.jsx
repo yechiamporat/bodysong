@@ -364,17 +364,69 @@
             }
         ];
 
+        // ===== ספריית ההשראה המוכנה מראש (inspiration.json) =====
+        // מבקר שמקליד אבר או תחושה מוכרים מקבל תשובה מהספרייה מיד, בלי AI ובלי מכסה.
+        // רק הקלדה שלא מתאימה לאף אבר נשלחת ל-Gemini דרך /api/inspire.
+        let inspirationLib = null;
+        const loadInspiration = () => {
+            if (!inspirationLib) {
+                inspirationLib = typeof fetch === 'function'
+                    ? fetch('/inspiration.json').then(r => r.json()).catch(() => { inspirationLib = null; return []; })
+                    : Promise.resolve([]);
+            }
+            return inspirationLib;
+        };
+        const normHe = (t) => (t || '').normalize('NFKD').replace(/[\u0591-\u05C7]/g, '')
+            .replace(/[^\u05D0-\u05EAa-z0-9 ]/gi, ' ').replace(/\s+/g, ' ').trim();
+        const PREFIX = /^[הובלמשכ]/;
+        const matchOrgan = (lib, input) => {
+            const q = normHe(input);
+            if (!q) return null;
+            const tokens = q.split(' ');
+            const forms = [...new Set([q, tokens.map(t => (t.length > 2 ? t.replace(PREFIX, '') : t)).join(' ')])];
+            let best = null, bestScore = 0;
+            lib.forEach((o, oi) => {
+                for (const kw of o.keywords) {
+                    const k = normHe(kw);
+                    if (!k) continue;
+                    for (const f of forms) {
+                        let sc = 0;
+                        if (f === k) sc = 1000 + k.length;
+                        else if ((' ' + f + ' ').includes(' ' + k + ' ')) sc = 500 + k.length;
+                        else if (f.length >= 3 && k.includes(f)) sc = 200 + f.length;
+                        if (sc > bestScore) { bestScore = sc; best = oi; }
+                    }
+                }
+            });
+            return best === null ? null : lib[best];
+        };
+        const lastVariant = {};
+
         const BodyInspiration = () => {
             const [input, setInput] = useState('');
             const [result, setResult] = useState(null);
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState("");
 
+            const [names, setNames] = useState([]);
+            useEffect(() => { loadInspiration().then(lib => setNames(lib.map(o => o.name))); }, []);
+
             const generate = async () => {
                 if (!input.trim()) return;
+                setError("");
+                const lib = await loadInspiration();
+                const organ = lib.length ? matchOrgan(lib, input) : null;
+                if (organ) {
+                    // גרסה אחרת מזו שהוצגה בפעם הקודמת לאותו אבר
+                    const n = organ.variants.length;
+                    let i = Math.floor(Math.random() * n);
+                    if (n > 1 && i === lastVariant[organ.id]) i = (i + 1) % n;
+                    lastVariant[organ.id] = i;
+                    setResult({ ...organ.variants[i], organId: organ.id, organTitle: organ.title || organ.name });
+                    return;
+                }
                 setLoading(true);
                 setResult(null);
-                setError("");
                 try {
                     // הקריאה ל-Gemini מתבצעת בשרת (netlify/functions/inspire.mjs) – המפתח לא נמצא בדף
                     const response = await fetch('/api/inspire', {
@@ -396,7 +448,8 @@
                         <Icon name="Sparkles" size={20} className="text-stone-400" /> השראה אישית מפרק שירה
                     </h3>
                     <div className="flex flex-col sm:flex-row gap-3 relative z-10 text-right">
-                        <input type="text" value={input} onChange={(e) => setInput(e.target.value)} 
+                        <input type="text" value={input} onChange={(e) => setInput(e.target.value)} list="organ-names"
+                               onKeyDown={(e) => { if (e.key === 'Enter') generate(); }}
                                placeholder="איזה איבר או תחושה מבקשים שירה?" 
                                className="flex-grow bg-black/60 border border-white/10 rounded-full px-6 py-3 text-white text-base focus:outline-none focus:ring-1 focus:ring-stone-600 transition-all text-right shadow-inner" />
                         <button onClick={generate} disabled={loading || !input.trim()} 
@@ -404,12 +457,14 @@
                             {loading ? "מתבונן..." : "גלה את השירה"}
                         </button>
                     </div>
+                    <datalist id="organ-names">{names.map(n => <option key={n} value={n} />)}</datalist>
                     {error && <p className="mt-4 text-red-400 text-right text-sm font-bold">{error}</p>}
                     {result && (
                         <div className="mt-8 space-y-4 animate-fade-in text-right relative z-10">
                             {result.verse && (
                                 <div className="bg-white/5 p-5 rounded-xl border-r-4 border-stone-600 text-right shadow-lg">
                                     <p className="text-xl md:text-2xl font-serif italic text-white leading-relaxed text-right">"{result.verse}"</p>
+                                    {result.source && <p className="mt-2 text-sm text-stone-500 text-right">({result.source})</p>}
                                 </div>
                             )}
                             <div className="p-6 bg-white/[0.01] rounded-xl border border-white/5 text-right shadow-md">
@@ -418,6 +473,13 @@
                                     {result.meditation}
                                 </div>
                             </div>
+                            {result.organId && (
+                                <div className="flex flex-wrap justify-between items-center gap-3 text-sm">
+                                    <a href={`/shirat-haguf/#${result.organId}`} className="text-stone-300 underline underline-offset-4 hover:text-white">ל"{result.organTitle}" בשירת הגוף</a>
+                                    <button onClick={generate} className="px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5">השראה נוספת</button>
+                                </div>
+                            )}
+                            <p className="text-xs text-stone-600 text-right">התרגולים נועדו להקשבה ולנוכחות, ואינם תחליף לייעוץ רפואי.</p>
                         </div>
                     )}
                 </div>
