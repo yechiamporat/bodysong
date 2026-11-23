@@ -2,7 +2,8 @@
 // הדפדפן שולח רק את שם האיבר/התחושה; המפתח של Gemini נשמר בנטליפיי
 // כמשתנה סביבה GEMINI_API_KEY ולא מגיע לעולם לדפדפן.
 
-const MODELS = (process.env.GEMINI_MODELS || "gemini-2.5-flash,gemini-flash-latest")
+// המכסה החינמית נספרת לכל מודל בנפרד: כשאחד מגיע למכסה עוברים לבא בתור
+const MODELS = (process.env.GEMINI_MODELS || "gemini-2.5-flash,gemini-flash-latest,gemini-2.5-flash-lite,gemini-flash-lite-latest")
   .split(",")
   .map((m) => m.trim())
   .filter(Boolean);
@@ -71,7 +72,7 @@ async function callModel(model, apiKey, input) {
   text = text.replace(/```json|```/g, "").trim();
   const parsed = JSON.parse(text);
   if (!parsed.verse || !parsed.inspiration) throw new Error("תשובה חסרה מהמודל");
-  return { verse: parsed.verse, inspiration: parsed.inspiration, meditation: parsed.meditation || "" };
+  return { verse: parsed.verse, inspiration: parsed.inspiration, meditation: parsed.meditation || "", model };
 }
 
 export default async (req) => {
@@ -90,17 +91,23 @@ export default async (req) => {
   if (input.length > MAX_INPUT) return json(400, { error: "הטקסט ארוך מדי." });
 
   let lastError = "";
+  let quotaHits = 0;
   for (const model of MODELS) {
     try {
       return json(200, await callModel(model, apiKey, input));
     } catch (e) {
-      lastError = e.message;
-      // מפתח שגוי או מכסה שנגמרה – אין טעם לנסות מודל אחר
-      if (e.status === 400 && /API key/i.test(lastError)) break;
-      if (e.status === 403 || e.status === 429) break;
+      lastError = `${model}: ${e.message}`;
+      console.warn("inspire model failed:", lastError);
+      // מפתח שגוי או חסום – אין טעם לנסות מודל אחר
+      if ((e.status === 400 && /API key/i.test(e.message)) || e.status === 403) break;
+      if (e.status === 429) quotaHits++;
+      // 429 (מכסה), 404 (מודל שהוצא משימוש), 5xx או תשובה לא תקינה – ממשיכים למודל הבא
     }
   }
   console.error("inspire failed:", lastError);
+  if (quotaHits > 0 && quotaHits === MODELS.length) {
+    return json(429, { error: "הכלי עמוס מאוד היום. נסו שוב מחר – ובינתיים אפשר לקרוא את שירת הגוף." });
+  }
   return json(502, { error: "לא הצלחנו לקבל השראה כרגע. נסו שוב בעוד רגע." });
 };
 
