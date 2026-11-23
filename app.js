@@ -425,7 +425,15 @@ const SongText = ({
     key: bi,
     id: b.id ? blockId(part, b) : undefined,
     className: `song-anchor ${b.closing ? 'song-closing' : ''} ${b.h ? 'song-block' : 'mb-6'}`
-  }, b.h && /*#__PURE__*/React.createElement("h2", {
+  }, b.sketch && /*#__PURE__*/React.createElement("img", {
+    src: b.sketch,
+    alt: `שרטוט: ${b.name}`,
+    width: "256",
+    height: "256",
+    loading: "lazy",
+    decoding: "async",
+    className: "song-sketch"
+  }), b.h && /*#__PURE__*/React.createElement("h2", {
     className: "song-h"
   }, b.h), (b.lines || []).map((l, li) => /*#__PURE__*/React.createElement(SongLine, {
     key: li,

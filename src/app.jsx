@@ -543,6 +543,7 @@
                             </header>
                             {part.blocks.map((b, bi) => (
                                 <div key={bi} id={b.id ? blockId(part, b) : undefined} className={`song-anchor ${b.closing ? 'song-closing' : ''} ${b.h ? 'song-block' : 'mb-6'}`}>
+                                    {b.sketch && <img src={b.sketch} alt={`שרטוט: ${b.name}`} width="256" height="256" loading="lazy" decoding="async" className="song-sketch" />}
                                     {b.h && <h2 className="song-h">{b.h}</h2>}
                                     {(b.lines || []).map((l, li) => <SongLine key={li} line={l} partId={part.id} k={`${part.id}-${bi}-${li}`} />)}
                                 </div>
