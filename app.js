@@ -320,9 +320,17 @@ const SongText = ({
     });
     // קישור ישיר לאבר: /shirat-haguf/#guf-30
     const id = decodeURIComponent(window.location.hash.slice(1));
-    if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({
-      block: 'start'
-    }), 60);
+    if (id) {
+      // גוללים שוב אחרי טעינת הגופנים והתמונות, כי הם משנים את גובה הדף
+      const jump = () => document.getElementById(id)?.scrollIntoView({
+        block: 'start'
+      });
+      setTimeout(jump, 60);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(jump, 30));
+      if (document.readyState !== 'complete') window.addEventListener('load', () => setTimeout(jump, 30), {
+        once: true
+      });
+    }
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   useEffect(() => {
@@ -425,7 +433,15 @@ const SongText = ({
     key: bi,
     id: b.id ? blockId(part, b) : undefined,
     className: `song-anchor ${b.closing ? 'song-closing' : ''} ${b.h ? 'song-block' : 'mb-6'}`
-  }, b.h && /*#__PURE__*/React.createElement("h2", {
+  }, b.sketch && /*#__PURE__*/React.createElement("img", {
+    src: b.sketch,
+    alt: `שרטוט: ${b.name}`,
+    width: "256",
+    height: "256",
+    loading: "lazy",
+    decoding: "async",
+    className: "song-sketch"
+  }), b.h && /*#__PURE__*/React.createElement("h2", {
     className: "song-h"
   }, b.h), (b.lines || []).map((l, li) => /*#__PURE__*/React.createElement(SongLine, {
     key: li,

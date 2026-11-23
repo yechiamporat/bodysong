@@ -38,6 +38,13 @@ const render = (route, pageData) => ReactDOMServer.renderToString(React.createEl
 
 // ---- 3. נתוני הספרון ----
 const booklet = JSON.parse(read('booklet.json'));
+// שרטוטי האברים: images/sketches/<part>-<id>.webp, אם קיים
+for (const part of booklet.parts) {
+  for (const b of part.blocks) {
+    const rel = `images/sketches/${part.id}-${b.id}.webp`;
+    if (b.id && fs.existsSync(path.join(ROOT, rel))) b.sketch = `/${rel}`;
+  }
+}
 const PART_PATHS = { guf: '/shirat-haguf/', nishmat: '/nishmat-kol-chai/', briah: '/shirat-habriah/', tikun: '/tikun-hanefesh/' };
 const dataFor = (partId) => ({
   parts: booklet.parts.map((p) => p.id === partId
