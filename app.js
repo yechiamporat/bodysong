@@ -320,9 +320,17 @@ const SongText = ({
     });
     // קישור ישיר לאבר: /shirat-haguf/#guf-30
     const id = decodeURIComponent(window.location.hash.slice(1));
-    if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({
-      block: 'start'
-    }), 60);
+    if (id) {
+      // גוללים שוב אחרי טעינת הגופנים והתמונות, כי הם משנים את גובה הדף
+      const jump = () => document.getElementById(id)?.scrollIntoView({
+        block: 'start'
+      });
+      setTimeout(jump, 60);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(jump, 30));
+      if (document.readyState !== 'complete') window.addEventListener('load', () => setTimeout(jump, 30), {
+        once: true
+      });
+    }
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   useEffect(() => {
