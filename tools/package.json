@@ -1,0 +1,14 @@
+{
+  "name": "shirathaguf-build",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build_site.mjs"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-react": "^7.26.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
