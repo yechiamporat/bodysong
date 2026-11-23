@@ -479,7 +479,6 @@
                                     <button onClick={generate} className="px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5">השראה נוספת</button>
                                 </div>
                             )}
-                            <p className="text-xs text-stone-600 text-right">התרגולים נועדו להקשבה ולנוכחות, ואינם תחליף לייעוץ רפואי.</p>
                         </div>
                     )}
                 </div>

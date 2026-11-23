@@ -337,9 +337,7 @@ const BodyInspiration = () => {
   }, "\u05DC\"", result.organTitle, "\" \u05D1\u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement("button", {
     onClick: generate,
     className: "px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5"
-  }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA")), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-stone-600 text-right"
-  }, "\u05D4\u05EA\u05E8\u05D2\u05D5\u05DC\u05D9\u05DD \u05E0\u05D5\u05E2\u05D3\u05D5 \u05DC\u05D4\u05E7\u05E9\u05D1\u05D4 \u05D5\u05DC\u05E0\u05D5\u05DB\u05D7\u05D5\u05EA, \u05D5\u05D0\u05D9\u05E0\u05DD \u05EA\u05D7\u05DC\u05D9\u05E3 \u05DC\u05D9\u05D9\u05E2\u05D5\u05E5 \u05E8\u05E4\u05D5\u05D0\u05D9.")));
+  }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA"))));
 };
 
 // ===== שירת הגוף כטקסט (מתוך booklet.json) =====
