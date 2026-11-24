@@ -611,9 +611,9 @@ const makeShareCard = async ({
   ctx.font = '700 66px "David Libre", serif';
   ctx.fillText(`${title}:`, W / 2, 560);
   // הפסוק – מקטינים את הגופן עד שהוא נכנס
-  const top = 640,
-    bottom = 1060;
-  let size = 50,
+  const top = 600,
+    bottom = 1030;
+  let size = 58,
     lines = [];
   for (; size >= 28; size -= 2) {
     ctx.font = `400 ${size}px "Noto Serif Hebrew", serif`;
@@ -637,25 +637,28 @@ const makeShareCard = async ({
   ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 160, 1110);
-  ctx.lineTo(W / 2 + 160, 1110);
+  ctx.moveTo(W / 2 - 160, 1075);
+  ctx.lineTo(W / 2 + 160, 1075);
   ctx.stroke();
   if (logo) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(W / 2, 1185, 50, 0, Math.PI * 2);
+    ctx.arc(W / 2, 1140, 45, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.fill();
     ctx.clip();
-    ctx.drawImage(logo, W / 2 - 49, 1136, 98, 98);
+    ctx.drawImage(logo, W / 2 - 44, 1096, 88, 88);
     ctx.restore();
   }
   ctx.fillStyle = '#fff';
   ctx.font = '700 44px "David Libre", serif';
-  ctx.fillText('שירת הגוף', W / 2, 1280);
-  ctx.fillStyle = '#a8a29e';
-  ctx.font = '400 30px "Assistant", sans-serif';
-  ctx.fillText(`להקשיב, לנכוח, להתפלל  ·  ${SITE_HOST}`, W / 2, 1325);
+  ctx.fillText('שירת הגוף', W / 2, 1232);
+  ctx.fillStyle = '#d6d3d1';
+  ctx.font = '400 34px "David Libre", serif';
+  ctx.fillText('להקשיב, לנכוח, להתפלל', W / 2, 1280);
+  ctx.fillStyle = '#78716c';
+  ctx.font = '400 24px "Assistant", sans-serif';
+  ctx.fillText(SITE_HOST, W / 2, 1320);
   return new Promise(res => c.toBlob(res, 'image/png'));
 };
 const ShareCardDialog = ({
@@ -853,6 +856,9 @@ const SongText = ({
     "aria-expanded": menuOpen,
     className: "w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 font-serif font-bold"
   }, "\u05D0"), menuOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-40",
+    onClick: () => setMenuOpen(false)
+  }), menuOpen && /*#__PURE__*/React.createElement("div", {
     className: "absolute left-0 top-11 w-56 bg-stone-950 border border-white/15 rounded-xl p-2 shadow-2xl animate-fade-in z-50"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between px-2 py-1.5"
@@ -870,11 +876,13 @@ const SongText = ({
     className: "w-8 h-8 rounded-full bg-white/5 text-white text-base"
   }, "\u05D0+"))), /*#__PURE__*/React.createElement("button", {
     onClick: toggleHc,
+    role: "switch",
+    "aria-checked": hc,
     className: "w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"
   }, /*#__PURE__*/React.createElement("span", null, "\u05E0\u05D9\u05D2\u05D5\u05D3\u05D9\u05D5\u05EA \u05D2\u05D1\u05D5\u05D4\u05D4"), /*#__PURE__*/React.createElement("span", {
-    className: `w-9 h-5 rounded-full p-0.5 ${hc ? 'bg-white' : 'bg-white/20'}`
+    className: `w-9 h-5 rounded-full p-0.5 flex ${hc ? 'bg-white justify-end' : 'bg-white/20 justify-start'}`
   }, /*#__PURE__*/React.createElement("span", {
-    className: `block w-4 h-4 rounded-full bg-black transition-transform ${hc ? '-translate-x-4' : ''}`
+    className: "w-4 h-4 rounded-full bg-black"
   }))), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setMenuOpen(false);

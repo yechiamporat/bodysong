@@ -633,8 +633,8 @@
             ctx.fillStyle = '#fff'; ctx.font = '700 66px "David Libre", serif';
             ctx.fillText(`${title}:`, W / 2, 560);
             // הפסוק – מקטינים את הגופן עד שהוא נכנס
-            const top = 640, bottom = 1060;
-            let size = 50, lines = [];
+            const top = 600, bottom = 1030;
+            let size = 58, lines = [];
             for (; size >= 28; size -= 2) {
                 ctx.font = `400 ${size}px "Noto Serif Hebrew", serif`;
                 lines = wrapLines(ctx, `"${verse}"`, 900);
@@ -648,14 +648,14 @@
             if (source) { ctx.fillStyle = '#a8a29e'; ctx.font = '400 30px "Assistant", sans-serif'; ctx.fillText(`(${source})`, W / 2, y - lh + size + 34); }
             // תחתית: קו, לוגו, שם וסלוגן
             ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(W / 2 - 160, 1110); ctx.lineTo(W / 2 + 160, 1110); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(W / 2 - 160, 1075); ctx.lineTo(W / 2 + 160, 1075); ctx.stroke();
             if (logo) {
-                ctx.save(); ctx.beginPath(); ctx.arc(W / 2, 1185, 50, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.clip();
-                ctx.drawImage(logo, W / 2 - 49, 1136, 98, 98); ctx.restore();
+                ctx.save(); ctx.beginPath(); ctx.arc(W / 2, 1140, 45, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.clip();
+                ctx.drawImage(logo, W / 2 - 44, 1096, 88, 88); ctx.restore();
             }
-            ctx.fillStyle = '#fff'; ctx.font = '700 44px "David Libre", serif'; ctx.fillText('שירת הגוף', W / 2, 1280);
-            ctx.fillStyle = '#a8a29e'; ctx.font = '400 30px "Assistant", sans-serif';
-            ctx.fillText(`להקשיב, לנכוח, להתפלל  ·  ${SITE_HOST}`, W / 2, 1325);
+            ctx.fillStyle = '#fff'; ctx.font = '700 44px "David Libre", serif'; ctx.fillText('שירת הגוף', W / 2, 1232);
+            ctx.fillStyle = '#d6d3d1'; ctx.font = '400 34px "David Libre", serif'; ctx.fillText('להקשיב, לנכוח, להתפלל', W / 2, 1280);
+            ctx.fillStyle = '#78716c'; ctx.font = '400 24px "Assistant", sans-serif'; ctx.fillText(SITE_HOST, W / 2, 1320);
             return new Promise(res => c.toBlob(res, 'image/png'));
         };
 
@@ -776,6 +776,7 @@
                             <div className="flex items-center gap-1.5">
                                 <div className="relative">
                                     <button onClick={() => setMenuOpen(o => !o)} aria-label="תצוגה והדפסה" aria-expanded={menuOpen} className="w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 font-serif font-bold">א</button>
+                                    {menuOpen && <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)}></div>}
                                     {menuOpen && (
                                         <div className="absolute left-0 top-11 w-56 bg-stone-950 border border-white/15 rounded-xl p-2 shadow-2xl animate-fade-in z-50">
                                             <div className="flex items-center justify-between px-2 py-1.5">
@@ -785,8 +786,8 @@
                                                     <button onClick={() => setSize(s => Math.min(1.6, +(s + 0.1).toFixed(2)))} aria-label="הגדלת גופן" className="w-8 h-8 rounded-full bg-white/5 text-white text-base">א+</button>
                                                 </span>
                                             </div>
-                                            <button onClick={toggleHc} className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200">
-                                                <span>ניגודיות גבוהה</span><span className={`w-9 h-5 rounded-full p-0.5 ${hc ? 'bg-white' : 'bg-white/20'}`}><span className={`block w-4 h-4 rounded-full bg-black transition-transform ${hc ? '-translate-x-4' : ''}`}></span></span>
+                                            <button onClick={toggleHc} role="switch" aria-checked={hc} className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200">
+                                                <span>ניגודיות גבוהה</span><span className={`w-9 h-5 rounded-full p-0.5 flex ${hc ? 'bg-white justify-end' : 'bg-white/20 justify-start'}`}><span className="w-4 h-4 rounded-full bg-black"></span></span>
                                             </button>
                                             <button onClick={() => { setMenuOpen(false); setTimeout(() => window.print(), 50); }} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Printer" size={16} /> הדפסת הטקסט</button>
                                             <a href="/booklet.pdf" download="שירת-הגוף.pdf" className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Download" size={16} /> הספרון המעוצב (PDF)</a>
