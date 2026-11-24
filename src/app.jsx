@@ -634,23 +634,26 @@
             ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
             ctx.direction = 'rtl'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
             const [sketch, logo] = await Promise.all([loadImg(`/images/sketches/${id}.webp`).catch(() => null), loadImg('/images/favicon.png').catch(() => null)]);
-            if (sketch) ctx.drawImage(sketch, (W - 400) / 2, 70, 400, 400);
-            ctx.fillStyle = '#fff'; ctx.font = '700 66px "David Libre", serif';
-            ctx.fillText(`${title}:`, W / 2, 560);
-            // הפסוק – מקטינים את הגופן עד שהוא נכנס
-            const top = 600, bottom = 1030;
+            // הפסוק – מקטינים את הגופן עד שהוא נכנס (מקסימום 430 פיקסלים)
             let size = 58, lines = [];
             for (; size >= 28; size -= 2) {
                 ctx.font = `400 ${size}px "Noto Serif Hebrew", serif`;
                 lines = wrapLines(ctx, `"${verse}"`, 900);
-                if (lines.length * size * 1.75 + (source ? 50 : 0) <= bottom - top) break;
+                if (lines.length * size * 1.75 + (source ? 50 : 0) <= 430) break;
             }
             const lh = size * 1.75;
-            const blockH = lines.length * lh + (source ? 50 : 0);
-            let y = top + (bottom - top - blockH) / 2 + size;
-            ctx.fillStyle = '#e7e5e4';
+            const verseH = (lines.length - 1) * lh + size + (source ? 56 : 0);
+            // ממרכזים את כל ההרכב (שרטוט, כותרת, פסוק) בשטח שמעל התחתית
+            const sk = 360, gap1 = 50, titleH = 66, gap2 = 70;
+            const contentH = (sketch ? sk + gap1 : 0) + titleH + gap2 + verseH;
+            let y0 = Math.max(40, (1050 - contentH) / 2);
+            if (sketch) { ctx.drawImage(sketch, (W - sk) / 2, y0, sk, sk); y0 += sk + gap1; }
+            ctx.fillStyle = '#fff'; ctx.font = '700 66px "David Libre", serif';
+            ctx.fillText(`${title}:`, W / 2, y0 + 52); y0 += titleH + gap2;
+            let y = y0 + size;
+            ctx.fillStyle = '#e7e5e4'; ctx.font = `400 ${size}px "Noto Serif Hebrew", serif`;
             for (const l of lines) { ctx.fillText(l, W / 2, y); y += lh; }
-            if (source) { ctx.fillStyle = '#a8a29e'; ctx.font = '400 30px "Assistant", sans-serif'; ctx.fillText(`(${source})`, W / 2, y - lh + size + 34); }
+            if (source) { ctx.fillStyle = '#a8a29e'; ctx.font = '400 30px "Assistant", sans-serif'; ctx.fillText(`(${source})`, W / 2, y - lh + 56); }
             // תחתית: קו, לוגו, שם וסלוגן
             ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(W / 2 - 160, 1075); ctx.lineTo(W / 2 + 160, 1075); ctx.stroke();
