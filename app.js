@@ -757,6 +757,26 @@ const useHighContrast = () => {
   };
   return [on, toggle];
 };
+
+// תמונות בטעינה עצלה שלא נגללו אליהן לא מודפסות – טוענים את כולן לפני ההדפסה
+const loadAllImages = () => {
+  const imgs = [...document.querySelectorAll('img[loading="lazy"]')];
+  imgs.forEach(i => {
+    i.loading = 'eager';
+  });
+  return imgs.filter(i => !i.complete).map(i => new Promise(r => {
+    i.addEventListener('load', r, {
+      once: true
+    });
+    i.addEventListener('error', r, {
+      once: true
+    });
+  }));
+};
+const printWithImages = async () => {
+  await Promise.race([Promise.all(loadAllImages()), new Promise(r => setTimeout(r, 5000))]);
+  window.print();
+};
 const SKETCH_ANIM = {
   30: 'anim-pulse',
   31: 'anim-pulse',
@@ -786,6 +806,7 @@ const SongText = ({
     window.addEventListener('scroll', onScroll, {
       passive: true
     });
+    window.addEventListener('beforeprint', loadAllImages);
     // קישור ישיר לאבר: /shirat-haguf/#guf-30
     const id = decodeURIComponent(window.location.hash.slice(1));
     if (id) {
@@ -799,7 +820,10 @@ const SongText = ({
         once: true
       });
     }
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('beforeprint', loadAllImages);
+    };
   }, []);
   useEffect(() => {
     try {
@@ -905,7 +929,7 @@ const SongText = ({
   }))), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setMenuOpen(false);
-      setTimeout(() => window.print(), 50);
+      setTimeout(printWithImages, 50);
     },
     className: "w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"
   }, /*#__PURE__*/React.createElement(Icon, {

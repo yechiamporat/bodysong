@@ -711,6 +711,17 @@
             return [on, toggle];
         };
 
+        // תמונות בטעינה עצלה שלא נגללו אליהן לא מודפסות – טוענים את כולן לפני ההדפסה
+        const loadAllImages = () => {
+            const imgs = [...document.querySelectorAll('img[loading="lazy"]')];
+            imgs.forEach(i => { i.loading = 'eager'; });
+            return imgs.filter(i => !i.complete).map(i => new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); }));
+        };
+        const printWithImages = async () => {
+            await Promise.race([Promise.all(loadAllImages()), new Promise(r => setTimeout(r, 5000))]);
+            window.print();
+        };
+
         const SKETCH_ANIM = { 30: 'anim-pulse', 31: 'anim-pulse', 32: 'anim-breathe' };
 
         const plainLine = (l) => (typeof l === 'string' ? l : l.map(x => x[0]).join(''));
@@ -729,6 +740,7 @@
             useEffect(() => {
                 const onScroll = () => setShowTop(window.scrollY > 900);
                 window.addEventListener('scroll', onScroll, { passive: true });
+                window.addEventListener('beforeprint', loadAllImages);
                 // קישור ישיר לאבר: /shirat-haguf/#guf-30
                 const id = decodeURIComponent(window.location.hash.slice(1));
                 if (id) {
@@ -738,7 +750,7 @@
                     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(jump, 30));
                     if (document.readyState !== 'complete') window.addEventListener('load', () => setTimeout(jump, 30), { once: true });
                 }
-                return () => window.removeEventListener('scroll', onScroll);
+                return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('beforeprint', loadAllImages); };
             }, []);
 
             useEffect(() => {
@@ -797,7 +809,7 @@
                                             <button onClick={toggleHc} role="switch" aria-checked={hc} className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200">
                                                 <span>ניגודיות גבוהה</span><span className={`w-9 h-5 rounded-full p-0.5 flex ${hc ? 'bg-white justify-end' : 'bg-white/20 justify-start'}`}><span className="w-4 h-4 rounded-full bg-black"></span></span>
                                             </button>
-                                            <button onClick={() => { setMenuOpen(false); setTimeout(() => window.print(), 50); }} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Printer" size={16} /> הדפסת הטקסט</button>
+                                            <button onClick={() => { setMenuOpen(false); setTimeout(printWithImages, 50); }} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Printer" size={16} /> הדפסת הטקסט</button>
                                             <a href="/booklet.pdf" download="שירת-הגוף.pdf" className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Download" size={16} /> הספרון המעוצב (PDF)</a>
                                         </div>
                                     )}
