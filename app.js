@@ -490,13 +490,21 @@ const BodyMap = ({
   onPick,
   compact = false
 }) => {
-  const [region, setRegion] = useState(null);
+  const [region, setRegionState] = useState(null);
+  const listRef = useRef(null);
+  const setRegion = k => {
+    setRegionState(k);
+    setTimeout(() => listRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest'
+    }), 60);
+  };
   const current = BODY_REGIONS.find(r => r.key === region);
   return /*#__PURE__*/React.createElement("div", {
     className: `flex ${compact ? 'flex-col' : 'flex-col md:flex-row'} gap-6 items-center md:items-start`
   }, /*#__PURE__*/React.createElement("svg", {
     viewBox: "0 0 200 440",
-    className: "body-map w-44 md:w-52 shrink-0",
+    className: "body-map w-36 md:w-52 shrink-0",
     role: "img",
     "aria-label": "\u05DE\u05E4\u05EA \u05D4\u05D2\u05D5\u05E3: \u05D1\u05D7\u05E8\u05D5 \u05D0\u05D6\u05D5\u05E8"
   }, /*#__PURE__*/React.createElement("g", {
@@ -546,7 +554,8 @@ const BodyMap = ({
   }, r.label))), !current && /*#__PURE__*/React.createElement("p", {
     className: "text-stone-500 font-serif text-lg"
   }, "\u05D1\u05D7\u05E8\u05D5 \u05D0\u05D6\u05D5\u05E8 \u05D1\u05D2\u05D5\u05E3, \u05D5\u05D0\u05D6 \u05D0\u05EA \u05D4\u05D0\u05D1\u05E8."), current && /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 sm:grid-cols-3 gap-2 animate-fade-in"
+    ref: listRef,
+    className: "grid grid-cols-2 sm:grid-cols-3 gap-2 animate-fade-in scroll-mb-6"
   }, current.organs.map(([id, name]) => /*#__PURE__*/React.createElement("button", {
     key: id,
     onClick: () => onPick(id, name),
