@@ -5,11 +5,14 @@
 - `src/app.jsx` – קוד האתר (React). **כאן עורכים.**
 - `src/template.html` – תבנית העמוד (head, עיצוב, סקריפטים).
 - `tools/build_site.mjs` – בונה מהמקור את `app.js` ואת כל העמודים עם הטקסט כבר בתוכם:
-  `index.html`, `shirat-haguf/`, `nishmat-kol-chai/`, `shirat-habriah/`, `tikun-hanefesh/`, `tirgul/`, `odot/`,
+  `index.html`, `shirat-haguf/`, `hashraa/`, `nishmat-kol-chai/`, `shirat-habriah/`, `tikun-hanefesh/`, `tirgul/`, `odot/`,
   וגם `sitemap.xml` ו-`robots.txt`. הקבצים האלה נוצרים אוטומטית – לא לערוך אותם ידנית.
   הרצה: `cd tools && npm install && npm run build`, ואז commit לכל הקבצים שהשתנו.
 - `images/` – הלוגו, תמונת השיתוף ו-29 עמודי הספרון.
-- `netlify/functions/inspire.mjs` – "השראה אישית מפרק שירה": פונה ל-Gemini מצד השרת.
+- `inspiration.json` – ספריית "השראה אישית" (3 גרסאות לכל אבר + מילות מפתח). נבנית מ-`data/inspiration-source.json`:
+  `python3 tools/build_inspiration.py`.
+- `netlify/functions/inspire.mjs` – גיבוי לכלי ההשראה: הקלדה שלא מתאימה לאף אבר נשלחת ל-Gemini מצד השרת.
+- `images/sketches/` – שרטוטי העיפרון של 64 האברים (`guf-<id>.webp`).
 - `booklet.pdf` – הספרון בפורמט PDF.
 - `booklet.json` – טקסט הספרון לתצוגת הקריאה. נוצר מקובץ הוורד:
   `python3 tools/build_booklet_json.py "שירת הגוף.docx" booklet.json` (דורש `pip install python-docx`).
