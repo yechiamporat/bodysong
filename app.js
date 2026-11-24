@@ -90,6 +90,12 @@ const ImageFlipBook = ({
   const prev = () => setCurrentPage(p => Math.max(1, p - 1));
   const touchStartX = useRef(null);
   useEffect(() => {
+    if (currentPage < totalPages) {
+      const im = new Image();
+      im.src = getPagePath(currentPage + 1);
+    }
+  }, [currentPage]);
+  useEffect(() => {
     const handleKeyDown = e => {
       if (e.key === 'ArrowLeft') next();
       if (e.key === 'ArrowRight') prev();
@@ -120,7 +126,14 @@ const ImageFlipBook = ({
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "AlignRight",
     size: 16
-  }), " \u05DC\u05E7\u05E8\u05D9\u05D0\u05D4 \u05DB\u05D8\u05E7\u05E1\u05D8"), /*#__PURE__*/React.createElement("button", {
+  }), " \u05DC\u05E7\u05E8\u05D9\u05D0\u05D4 \u05DB\u05D8\u05E7\u05E1\u05D8"), /*#__PURE__*/React.createElement("a", {
+    href: "/booklet.pdf",
+    download: "\u05E9\u05D9\u05E8\u05EA-\u05D4\u05D2\u05D5\u05E3.pdf",
+    className: "flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/10 text-sm"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Download",
+    size: 16
+  }), " PDF"), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     className: "p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-all"
   }, /*#__PURE__*/React.createElement(Icon, {
@@ -241,16 +254,27 @@ const matchOrgan = (lib, input) => {
 const lastVariant = {};
 const INSPIRE_EXAMPLES = ['לב', 'עיניים', 'ידיים', 'נשימה', 'ראש', 'בטן', 'גב', 'רגליים'];
 const BodyInspiration = ({
-  standalone = false
+  standalone = false,
+  pick = null
 }) => {
   const [input, setInput] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [names, setNames] = useState([]);
+  const [shareCard, setShareCard] = useState(null);
   useEffect(() => {
     loadInspiration().then(lib => setNames(lib.map(o => o.name)));
   }, []);
+  const resultRef = useRef(null);
+  useEffect(() => {
+    if (!pick) return;
+    setInput(pick.name);
+    generate(pick.name).then(() => setTimeout(() => resultRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    }), 80));
+  }, [pick]);
   const generate = async text => {
     const q = (typeof text === 'string' ? text : input).trim();
     if (!q) return;
@@ -327,7 +351,10 @@ const BodyInspiration = ({
       generate(n);
     },
     className: "px-3 py-1.5 rounded-full bg-black/40 border border-white/10 text-stone-300 hover:text-white hover:border-white/30"
-  }, n))), /*#__PURE__*/React.createElement("datalist", {
+  }, n))), shareCard && /*#__PURE__*/React.createElement(ShareCardDialog, {
+    card: shareCard,
+    onClose: () => setShareCard(null)
+  }), /*#__PURE__*/React.createElement("datalist", {
     id: "organ-names"
   }, names.map(n => /*#__PURE__*/React.createElement("option", {
     key: n,
@@ -335,7 +362,8 @@ const BodyInspiration = ({
   }))), error && /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-red-400 text-right text-sm font-bold"
   }, error), result && /*#__PURE__*/React.createElement("div", {
-    className: "mt-8 space-y-4 animate-fade-in text-right relative z-10"
+    ref: resultRef,
+    className: "mt-8 space-y-4 animate-fade-in text-right relative z-10 song-anchor"
   }, result.verse && /*#__PURE__*/React.createElement("div", {
     className: "bg-white/5 p-5 rounded-xl border-r-4 border-stone-600 text-right shadow-lg"
   }, /*#__PURE__*/React.createElement("p", {
@@ -353,10 +381,23 @@ const BodyInspiration = ({
   }, /*#__PURE__*/React.createElement("a", {
     href: `/shirat-haguf/#${result.organId}`,
     className: "text-stone-300 underline underline-offset-4 hover:text-white"
-  }, "\u05DC\"", result.organTitle, "\" \u05D1\u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement("button", {
+  }, "\u05DC\"", result.organTitle, "\" \u05D1\u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement("span", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShareCard({
+      id: result.organId,
+      title: result.organTitle,
+      verse: cleanVerse(result.verse),
+      source: result.source
+    }),
+    className: "flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Share2",
+    size: 14
+  }), " \u05E9\u05D9\u05EA\u05D5\u05E3"), /*#__PURE__*/React.createElement("button", {
     onClick: () => generate(),
     className: "px-4 py-1.5 rounded-full border border-white/15 text-stone-300 hover:bg-white/5"
-  }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA"))));
+  }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA")))));
 };
 
 // ===== שירת הגוף כטקסט (מתוך booklet.json) =====
@@ -396,12 +437,362 @@ const SongLine = ({
     key: i
   }, renderInline(t, partId, `${k}-${i}`))));
 };
+
+// ===== מפת הגוף =====
+const BODY_REGIONS = [{
+  key: 'head',
+  label: 'ראש ופנים',
+  dot: [100, 34],
+  organs: [[1, "ראש"], [2, "קרקפתא דתפילין"], [3, "מח"], [4, "שיער"], [5, "רקה"], [6, "אזן"], [7, "עין"], [8, "אף"], [9, "פה"], [10, "לשון"], [11, "שפתיים"], [12, "חיך"], [13, "שיניים"], [14, "לחיים"]]
+}, {
+  key: 'neck',
+  label: 'צוואר וגרון',
+  dot: [100, 70],
+  organs: [[15, "צוואר"], [16, "עורף"], [17, "מיתרי הקול"], [18, "ושט"]]
+}, {
+  key: 'shoulders',
+  label: 'כתפיים וגב',
+  dot: [140, 90],
+  organs: [[19, "חגורת הכתפיים"], [20, "כתף"], [27, "גב"], [28, "שכמה"]]
+}, {
+  key: 'hands',
+  label: 'ידיים',
+  dot: [171, 256],
+  organs: [[21, "ידיים"], [22, "יד ימין"], [23, "יד שמאל"], [24, "אצבעות"], [25, "ציפורניים"]]
+}, {
+  key: 'chest',
+  label: 'חזה ולב',
+  dot: [111, 122],
+  organs: [[26, "גופא (מרכז הגוף)"], [29, "שדיים"], [30, "לב"], [31, "מעטפת הלב"], [32, "ריאות ומערכת הנשימה"]]
+}, {
+  key: 'belly',
+  label: 'בטן',
+  dot: [100, 172],
+  organs: [[33, "בטן"], [34, "כבד"], [35, "כיס המרה"], [36, "טחול, מערכת החיסון והלימפה"], [37, "לבלב"], [38, "קיבה"], [39, "מעי דק"], [40, "מעי גס"], [41, "כליות"]]
+}, {
+  key: 'pelvis',
+  label: 'אגן',
+  dot: [100, 224],
+  organs: [[42, "שלפוחית השתן"], [43, "אברי הרבייה הפנימיים"], [44, "אברי הרביה החיצוניים (אות ברית קודש)"]]
+}, {
+  key: 'legs',
+  label: 'רגליים',
+  dot: [119, 334],
+  organs: [[45, "רגליים"], [46, "רגל ימין"], [47, "רגל שמאל"], [48, "ירך"], [49, "ברך"], [50, "שוק"], [51, "עקב"], [52, "כף הרגל"]]
+}, {
+  key: 'whole',
+  label: 'בכל הגוף',
+  dot: null,
+  organs: [[53, "עור"], [54, "שרירים ובשר"], [55, "דם"], [56, "עורקים"], [57, "ורידים"], [58, "עצמות"], [59, "גידים"], [60, "מערכת העצבים"], [61, "מערכת העצבים הפאראסימפטטית"], [62, "מערכת העצבים הסימפטטית"], [63, "המערכת ההורמונאלית"], [64, "חללי הגוף, הרקמה המחברת והנוזל הבין תאי"]]
+}];
+const BODY_PATH = 'M108,55 C111.0,58.2 108.3,69.8 110,74 C111.7,78.2 113.7,78.3 118,80 C122.3,81.7 131.0,82.3 136,84 C141.0,85.7 145.0,87.0 148,90 C151.0,93.0 152.5,96.7 154,102 C155.5,107.3 156.0,114.3 157,122 C158.0,129.7 158.8,139.7 160,148 C161.2,156.3 162.7,163.7 164,172 C165.3,180.3 166.7,189.7 168,198 C169.3,206.3 170.8,215.3 172,222 C173.2,228.7 173.7,233.7 175,238 C176.3,242.3 178.8,244.7 180,248 C181.2,251.3 182.3,255.0 182,258 C181.7,261.0 180.0,264.3 178,266 C176.0,267.7 172.3,269.0 170,268 C167.7,267.0 165.3,263.3 164,260 C162.7,256.7 162.7,252.0 162,248 C161.3,244.0 161.3,242.3 160,236 C158.7,229.7 155.8,218.7 154,210 C152.2,201.3 150.5,192.3 149,184 C147.5,175.7 146.3,167.7 145,160 C143.7,152.3 142.3,144.0 141,138 C139.7,132.0 138.0,123.7 137,124 C136.0,124.3 135.8,133.0 135,140 C134.2,147.0 132.8,158.3 132,166 C131.2,173.7 129.8,179.7 130,186 C130.2,192.3 131.8,198.0 133,204 C134.2,210.0 136.2,215.0 137,222 C137.8,229.0 138.2,237.0 138,246 C137.8,255.0 136.8,266.0 136,276 C135.2,286.0 133.8,297.3 133,306 C132.2,314.7 131.2,320.7 131,328 C130.8,335.3 132.2,341.7 132,350 C131.8,358.3 131.0,369.0 130,378 C129.0,387.0 126.5,397.3 126,404 C125.5,410.7 125.7,414.0 127,418 C128.3,422.0 132.5,425.3 134,428 C135.5,430.7 137.7,432.7 136,434 C134.3,435.3 127.8,436.0 124,436 C120.2,436.0 115.2,436.7 113,434 C110.8,431.3 111.2,425.0 111,420 C110.8,415.0 112.2,411.0 112,404 C111.8,397.0 110.7,387.0 110,378 C109.3,369.0 108.3,358.3 108,350 C107.7,341.7 108.3,336.3 108,328 C107.7,319.7 106.7,310.0 106,300 C105.3,290.0 104.8,277.3 104,268 C103.2,258.7 101.7,248.3 101,244 C100.3,239.7 100.3,242.0 100,242 C99.7,242.0 99.7,239.7 99,244 C98.3,248.3 96.8,258.7 96,268 C95.2,277.3 94.7,290.0 94,300 C93.3,310.0 92.3,319.7 92,328 C91.7,336.3 92.3,341.7 92,350 C91.7,358.3 90.7,369.0 90,378 C89.3,387.0 88.2,397.0 88,404 C87.8,411.0 89.2,415.0 89,420 C88.8,425.0 89.2,431.3 87,434 C84.8,436.7 79.8,436.0 76,436 C72.2,436.0 65.7,435.3 64,434 C62.3,432.7 64.5,430.7 66,428 C67.5,425.3 71.7,422.0 73,418 C74.3,414.0 74.5,410.7 74,404 C73.5,397.3 71.0,387.0 70,378 C69.0,369.0 68.2,358.3 68,350 C67.8,341.7 69.2,335.3 69,328 C68.8,320.7 67.8,314.7 67,306 C66.2,297.3 64.8,286.0 64,276 C63.2,266.0 62.2,255.0 62,246 C61.8,237.0 62.2,229.0 63,222 C63.8,215.0 65.8,210.0 67,204 C68.2,198.0 69.8,192.3 70,186 C70.2,179.7 68.8,173.7 68,166 C67.2,158.3 65.8,147.0 65,140 C64.2,133.0 64.0,124.3 63,124 C62.0,123.7 60.3,132.0 59,138 C57.7,144.0 56.3,152.3 55,160 C53.7,167.7 52.5,175.7 51,184 C49.5,192.3 47.8,201.3 46,210 C44.2,218.7 41.3,229.7 40,236 C38.7,242.3 38.7,244.0 38,248 C37.3,252.0 37.3,256.7 36,260 C34.7,263.3 32.3,267.0 30,268 C27.7,269.0 24.0,267.7 22,266 C20.0,264.3 18.3,261.0 18,258 C17.7,255.0 18.8,251.3 20,248 C21.2,244.7 23.7,242.3 25,238 C26.3,233.7 26.8,228.7 28,222 C29.2,215.3 30.7,206.3 32,198 C33.3,189.7 34.7,180.3 36,172 C37.3,163.7 38.8,156.3 40,148 C41.2,139.7 42.0,129.7 43,122 C44.0,114.3 44.5,107.3 46,102 C47.5,96.7 49.0,93.0 52,90 C55.0,87.0 59.0,85.7 64,84 C69.0,82.3 77.7,81.7 82,80 C86.3,78.3 88.3,78.2 90,74 C91.7,69.8 89.0,58.2 92,55 C95.0,51.8 105.0,51.8 108,55 Z';
+const BodyMap = ({
+  onPick,
+  compact = false
+}) => {
+  const [region, setRegionState] = useState(null);
+  const listRef = useRef(null);
+  const setRegion = k => {
+    setRegionState(k);
+    setTimeout(() => listRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest'
+    }), 60);
+  };
+  const current = BODY_REGIONS.find(r => r.key === region);
+  return /*#__PURE__*/React.createElement("div", {
+    className: `flex ${compact ? 'flex-col' : 'flex-col md:flex-row'} gap-6 items-center md:items-start`
+  }, /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 200 440",
+    className: "body-map w-36 md:w-52 shrink-0",
+    role: "img",
+    "aria-label": "\u05DE\u05E4\u05EA \u05D4\u05D2\u05D5\u05E3: \u05D1\u05D7\u05E8\u05D5 \u05D0\u05D6\u05D5\u05E8"
+  }, /*#__PURE__*/React.createElement("g", {
+    fill: "none",
+    stroke: "#e7e5e4",
+    strokeWidth: "1.1",
+    strokeLinejoin: "round",
+    opacity: "0.75"
+  }, /*#__PURE__*/React.createElement("ellipse", {
+    cx: "100",
+    cy: "36",
+    rx: "21",
+    ry: "26"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: BODY_PATH
+  })), BODY_REGIONS.filter(r => r.dot).map((r, i) => /*#__PURE__*/React.createElement("g", {
+    key: r.key,
+    className: "map-dot",
+    style: {
+      animationDelay: `${i * 0.4}s`
+    },
+    onClick: () => setRegion(r.key),
+    role: "button",
+    tabIndex: "0",
+    "aria-label": r.label,
+    onKeyDown: e => {
+      if (e.key === 'Enter') setRegion(r.key);
+    }
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: r.dot[0],
+    cy: r.dot[1],
+    r: "14",
+    fill: "transparent"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: r.dot[0],
+    cy: r.dot[1],
+    r: region === r.key ? 6 : 4.5,
+    className: region === r.key ? 'map-dot-on' : 'map-dot-off'
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "flex-grow w-full text-right"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mb-4"
+  }, BODY_REGIONS.map(r => /*#__PURE__*/React.createElement("button", {
+    key: r.key,
+    onClick: () => setRegion(r.key),
+    className: `px-3 py-1.5 rounded-full text-sm border ${region === r.key ? 'bg-white text-black border-white font-bold' : 'border-white/15 text-stone-300 hover:text-white'}`
+  }, r.label))), !current && /*#__PURE__*/React.createElement("p", {
+    className: "text-stone-500 font-serif text-lg"
+  }, "\u05D1\u05D7\u05E8\u05D5 \u05D0\u05D6\u05D5\u05E8 \u05D1\u05D2\u05D5\u05E3, \u05D5\u05D0\u05D6 \u05D0\u05EA \u05D4\u05D0\u05D1\u05E8."), current && /*#__PURE__*/React.createElement("div", {
+    ref: listRef,
+    className: "grid grid-cols-2 sm:grid-cols-3 gap-2 animate-fade-in scroll-mb-6"
+  }, current.organs.map(([id, name]) => /*#__PURE__*/React.createElement("button", {
+    key: id,
+    onClick: () => onPick(id, name),
+    className: "flex items-center gap-2 px-2 py-1.5 rounded-xl bg-stone-900/70 border border-white/10 hover:border-white/30 text-stone-200 hover:text-white text-sm text-right"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: `/images/sketches/guf-${id}.webp`,
+    alt: "",
+    width: "32",
+    height: "32",
+    loading: "lazy",
+    className: "w-8 h-8 shrink-0"
+  }), /*#__PURE__*/React.createElement("span", null, name))))));
+};
+
+// ===== כרטיס שיתוף =====
+const SITE_HOST = 'shirathaguf.netlify.app';
+const stripTeamim = t => (t || '').replace(/[֑-ֽ֯׀׃]/g, '');
+const cleanVerse = t => stripTeamim(t).replace(/\(([^()]*)\)\s*$/, '').trim().replace(/^["״'׳]+|["״'׳:]+$/g, '').replace(/:$/, '').trim();
+const loadImg = src => new Promise((res, rej) => {
+  const im = new Image();
+  im.onload = () => res(im);
+  im.onerror = rej;
+  im.src = src;
+});
+const wrapLines = (ctx, text, maxW) => {
+  const words = text.split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const w of words) {
+    const t = line ? `${line} ${w}` : w;
+    if (ctx.measureText(t).width > maxW && line) {
+      lines.push(line);
+      line = w;
+    } else line = t;
+  }
+  if (line) lines.push(line);
+  return lines;
+};
+const makeShareCard = async ({
+  id,
+  title,
+  verse,
+  source
+}) => {
+  const W = 1080,
+    H = 1350;
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d');
+  try {
+    await Promise.all([document.fonts.load('700 64px "David Libre"', 'אבג'), document.fonts.load('400 46px "Noto Serif Hebrew"', 'אָבָג'), document.fonts.load('400 30px "Assistant"', 'אבג')]);
+  } catch (e) {}
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  const [sketch, logo] = await Promise.all([loadImg(`/images/sketches/${id}.webp`).catch(() => null), loadImg('/images/favicon.png').catch(() => null)]);
+  // הפסוק – מקטינים את הגופן עד שהוא נכנס (מקסימום 430 פיקסלים)
+  let size = 58,
+    lines = [];
+  for (; size >= 28; size -= 2) {
+    ctx.font = `400 ${size}px "Noto Serif Hebrew", serif`;
+    lines = wrapLines(ctx, `"${verse}"`, 900);
+    if (lines.length * size * 1.75 + (source ? 50 : 0) <= 430) break;
+  }
+  const lh = size * 1.75;
+  const verseH = (lines.length - 1) * lh + size + (source ? 56 : 0);
+  // ממרכזים את כל ההרכב (שרטוט, כותרת, פסוק) בשטח שמעל התחתית
+  const sk = 360,
+    gap1 = 50,
+    titleH = 66,
+    gap2 = 70;
+  const contentH = (sketch ? sk + gap1 : 0) + titleH + gap2 + verseH;
+  let y0 = Math.max(40, (1050 - contentH) / 2);
+  if (sketch) {
+    ctx.drawImage(sketch, (W - sk) / 2, y0, sk, sk);
+    y0 += sk + gap1;
+  }
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 66px "David Libre", serif';
+  ctx.fillText(`${title}:`, W / 2, y0 + 52);
+  y0 += titleH + gap2;
+  let y = y0 + size;
+  ctx.fillStyle = '#e7e5e4';
+  ctx.font = `400 ${size}px "Noto Serif Hebrew", serif`;
+  for (const l of lines) {
+    ctx.fillText(l, W / 2, y);
+    y += lh;
+  }
+  if (source) {
+    ctx.fillStyle = '#a8a29e';
+    ctx.font = '400 30px "Assistant", sans-serif';
+    ctx.fillText(`(${source})`, W / 2, y - lh + 56);
+  }
+  // תחתית: קו, לוגו, שם וסלוגן
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - 160, 1075);
+  ctx.lineTo(W / 2 + 160, 1075);
+  ctx.stroke();
+  if (logo) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(W / 2, 1140, 45, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.clip();
+    ctx.drawImage(logo, W / 2 - 44, 1096, 88, 88);
+    ctx.restore();
+  }
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 44px "David Libre", serif';
+  ctx.fillText('שירת הגוף', W / 2, 1232);
+  ctx.fillStyle = '#d6d3d1';
+  ctx.font = '400 34px "David Libre", serif';
+  ctx.fillText('להקשיב, לנכוח, להתפלל', W / 2, 1280);
+  ctx.fillStyle = '#78716c';
+  ctx.font = '400 24px "Assistant", sans-serif';
+  ctx.fillText(SITE_HOST, W / 2, 1320);
+  return new Promise(res => c.toBlob(res, 'image/png'));
+};
+const ShareCardDialog = ({
+  card,
+  onClose
+}) => {
+  const [url, setUrl] = useState(null);
+  const [file, setFile] = useState(null);
+  useEffect(() => {
+    let u;
+    makeShareCard(card).then(blob => {
+      if (!blob) return;
+      u = URL.createObjectURL(blob);
+      setUrl(u);
+      setFile(new File([blob], `shirat-haguf-${card.id}.png`, {
+        type: 'image/png'
+      }));
+    });
+    const onKey = e => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (u) URL.revokeObjectURL(u);
+    };
+  }, []);
+  const link = `https://${SITE_HOST}/shirat-haguf/#${card.id}`;
+  const canShare = file && navigator.canShare && navigator.canShare({
+    files: [file]
+  });
+  const share = async () => {
+    try {
+      await navigator.share({
+        files: [file],
+        text: `${card.title} – שירת הגוף\n${link}`
+      });
+    } catch (e) {}
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[120] bg-black/90 flex items-center justify-center p-4 animate-fade-in",
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-stone-950 border border-white/10 rounded-2xl p-4 max-w-sm w-full text-center",
+    onClick: e => e.stopPropagation()
+  }, url ? /*#__PURE__*/React.createElement("img", {
+    src: url,
+    alt: `כרטיס שיתוף: ${card.title}`,
+    className: "w-full rounded-lg mb-4"
+  }) : /*#__PURE__*/React.createElement("p", {
+    className: "py-24 text-stone-500 font-serif"
+  }, "\u05DE\u05DB\u05D9\u05DF \u05D0\u05EA \u05D4\u05DB\u05E8\u05D8\u05D9\u05E1\u2026"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 justify-center flex-wrap"
+  }, canShare && /*#__PURE__*/React.createElement("button", {
+    onClick: share,
+    className: "px-5 py-2 rounded-full bg-white text-black font-bold"
+  }, "\u05E9\u05D9\u05EA\u05D5\u05E3"), url && /*#__PURE__*/React.createElement("a", {
+    href: url,
+    download: `shirat-haguf-${card.id}.png`,
+    className: "px-5 py-2 rounded-full border border-white/20 text-stone-200"
+  }, "\u05D4\u05D5\u05E8\u05D3\u05EA \u05D4\u05EA\u05DE\u05D5\u05E0\u05D4"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-5 py-2 rounded-full text-stone-400 hover:text-white"
+  }, "\u05E1\u05D2\u05D9\u05E8\u05D4"))));
+};
+
+// ===== תצוגה: ניגודיות גבוהה =====
+const useHighContrast = () => {
+  const [on, setOn] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('hc'));
+  const toggle = () => {
+    const v = !on;
+    setOn(v);
+    document.documentElement.classList.toggle('hc', v);
+    try {
+      localStorage.setItem('hc', v ? '1' : '0');
+    } catch (e) {}
+  };
+  return [on, toggle];
+};
+
+// תמונות בטעינה עצלה שלא נגללו אליהן לא מודפסות – טוענים את כולן לפני ההדפסה
+const loadAllImages = () => {
+  const imgs = [...document.querySelectorAll('img[loading="lazy"]')];
+  imgs.forEach(i => {
+    i.loading = 'eager';
+  });
+  return imgs.filter(i => !i.complete).map(i => new Promise(r => {
+    i.addEventListener('load', r, {
+      once: true
+    });
+    i.addEventListener('error', r, {
+      once: true
+    });
+  }));
+};
+const printWithImages = async () => {
+  await Promise.race([Promise.all(loadAllImages()), new Promise(r => setTimeout(r, 5000))]);
+  window.print();
+};
+const SKETCH_ANIM = {
+  30: 'anim-pulse',
+  31: 'anim-pulse',
+  32: 'anim-breathe'
+};
+const plainLine = l => typeof l === 'string' ? l : l.map(x => x[0]).join('');
 const SongText = ({
   data,
   partId,
   onOpenBook
 }) => {
   const [tocOpen, setTocOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [shareCard, setShareCard] = useState(null);
+  const [hc, toggleHc] = useHighContrast();
   const [size, setSize] = useState(() => {
     try {
       return Number(localStorage.getItem('songTextSize')) || 1;
@@ -415,6 +806,7 @@ const SongText = ({
     window.addEventListener('scroll', onScroll, {
       passive: true
     });
+    window.addEventListener('beforeprint', loadAllImages);
     // קישור ישיר לאבר: /shirat-haguf/#guf-30
     const id = decodeURIComponent(window.location.hash.slice(1));
     if (id) {
@@ -428,7 +820,10 @@ const SongText = ({
         once: true
       });
     }
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('beforeprint', loadAllImages);
+    };
   }, []);
   useEffect(() => {
     try {
@@ -437,6 +832,7 @@ const SongText = ({
   }, [size]);
   const goTo = id => {
     setTocOpen(false);
+    setMapOpen(false);
     try {
       history.replaceState(null, '', `#${id}`);
     } catch (e) {}
@@ -452,37 +848,119 @@ const SongText = ({
   const prevPart = parts[idx - 1];
   const nextPart = parts[idx + 1];
   const blockId = (p, b) => `${p.id}-${b.id}`;
+  const pickOrgan = num => {
+    if (part.id === 'guf') goTo(`guf-${num}`);else window.location.href = `/shirat-haguf/#guf-${num}`;
+  };
+  const shareBlock = b => {
+    const first = plainLine((b.lines || [])[0] || '');
+    const m = first.match(/\(([^()]+)\)\s*$/);
+    setShareCard({
+      id: blockId(part, b),
+      title: b.h.replace(/:\s*$/, ''),
+      verse: cleanVerse(first),
+      source: m ? m[1].trim() : ''
+    });
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "text-right"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "sticky top-14 z-40 bg-black/95 backdrop-blur-md border-b border-white/5"
+    className: "sticky top-14 z-40 bg-black/95 backdrop-blur-md border-b border-white/5 no-print"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "max-w-3xl mx-auto px-3 h-12 flex items-center justify-between gap-2"
+    className: "max-w-3xl mx-auto px-2 h-12 flex items-center justify-between gap-1.5 text-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setTocOpen(o => !o),
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 text-sm"
+    onClick: () => {
+      setTocOpen(o => !o);
+      setMapOpen(false);
+      setMenuOpen(false);
+    },
+    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: tocOpen ? 'X' : 'List',
     size: 16
-  }), " \u05EA\u05D5\u05DB\u05DF"), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1 text-sm"
+  }), " \u05EA\u05D5\u05DB\u05DF"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setMapOpen(o => !o);
+      setTocOpen(false);
+      setMenuOpen(false);
+    },
+    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: mapOpen ? 'X' : 'PersonStanding',
+    size: 16
+  }), " \u05DE\u05E4\u05D4")), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setMenuOpen(o => !o),
+    "aria-label": "\u05EA\u05E6\u05D5\u05D2\u05D4 \u05D5\u05D4\u05D3\u05E4\u05E1\u05D4",
+    "aria-expanded": menuOpen,
+    className: "w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 font-serif font-bold"
+  }, "\u05D0"), menuOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-40",
+    onClick: () => setMenuOpen(false)
+  }), menuOpen && /*#__PURE__*/React.createElement("div", {
+    className: "absolute left-0 top-11 w-56 bg-stone-950 border border-white/15 rounded-xl p-2 shadow-2xl animate-fade-in z-50"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between px-2 py-1.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-stone-400"
+  }, "\u05D2\u05D5\u05D3\u05DC \u05D8\u05E7\u05E1\u05D8"), /*#__PURE__*/React.createElement("span", {
+    className: "flex gap-1"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setSize(s => Math.max(0.85, +(s - 0.1).toFixed(2))),
     "aria-label": "\u05D4\u05E7\u05D8\u05E0\u05EA \u05D2\u05D5\u05E4\u05DF",
-    className: "w-8 h-8 rounded-full text-stone-400 hover:text-white hover:bg-white/5"
+    className: "w-8 h-8 rounded-full bg-white/5 text-stone-300 hover:text-white"
   }, "\u05D0-"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setSize(s => Math.min(1.6, +(s + 0.1).toFixed(2))),
     "aria-label": "\u05D4\u05D2\u05D3\u05DC\u05EA \u05D2\u05D5\u05E4\u05DF",
-    className: "w-8 h-8 rounded-full text-stone-200 hover:text-white hover:bg-white/5 text-base"
-  }, "\u05D0+")), /*#__PURE__*/React.createElement("div", {
-    className: "flex rounded-full border border-white/15 p-0.5 text-sm"
+    className: "w-8 h-8 rounded-full bg-white/5 text-white text-base"
+  }, "\u05D0+"))), /*#__PURE__*/React.createElement("button", {
+    onClick: toggleHc,
+    role: "switch",
+    "aria-checked": hc,
+    className: "w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"
+  }, /*#__PURE__*/React.createElement("span", null, "\u05E0\u05D9\u05D2\u05D5\u05D3\u05D9\u05D5\u05EA \u05D2\u05D1\u05D5\u05D4\u05D4"), /*#__PURE__*/React.createElement("span", {
+    className: `w-9 h-5 rounded-full p-0.5 flex ${hc ? 'bg-white justify-end' : 'bg-white/20 justify-start'}`
   }, /*#__PURE__*/React.createElement("span", {
-    className: "px-3 py-1 rounded-full bg-white text-black font-bold"
-  }, "\u05D8\u05E7\u05E1\u05D8"), /*#__PURE__*/React.createElement("button", {
+    className: "w-4 h-4 rounded-full bg-black"
+  }))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setMenuOpen(false);
+      setTimeout(printWithImages, 50);
+    },
+    className: "w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Printer",
+    size: 16
+  }), " \u05D4\u05D3\u05E4\u05E1\u05EA \u05D4\u05D8\u05E7\u05E1\u05D8"), /*#__PURE__*/React.createElement("a", {
+    href: "/booklet.pdf",
+    download: "\u05E9\u05D9\u05E8\u05EA-\u05D4\u05D2\u05D5\u05E3.pdf",
+    className: "w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Download",
+    size: 16
+  }), " \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF \u05D4\u05DE\u05E2\u05D5\u05E6\u05D1 (PDF)"))), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenBook,
-    className: "px-3 py-1 rounded-full text-stone-300 hover:text-white"
-  }, "\u05E2\u05DE\u05D5\u05D3\u05D9 \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF")))), tocOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-x-0 top-[6.5rem] bottom-0 z-40 bg-black overflow-y-auto custom-scrollbar animate-fade-in"
+    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "BookOpen",
+    size: 16
+  }), " \u05E1\u05E4\u05E8\u05D5\u05DF")))), mapOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-x-0 top-[6.5rem] bottom-0 z-40 bg-black overflow-y-auto custom-scrollbar animate-fade-in no-print"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 py-6"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-serif text-2xl font-bold text-white mb-4"
+  }, "\u05DE\u05E4\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement(BodyMap, {
+    onPick: pickOrgan
+  }))), shareCard && /*#__PURE__*/React.createElement(ShareCardDialog, {
+    card: shareCard,
+    onClose: () => setShareCard(null)
+  }), tocOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-x-0 top-[6.5rem] bottom-0 z-40 bg-black overflow-y-auto custom-scrollbar animate-fade-in no-print"
   }, /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto px-4 py-6"
   }, parts.map(p => {
@@ -537,7 +1015,7 @@ const SongText = ({
     height: "256",
     loading: "lazy",
     decoding: "async",
-    className: "song-sketch"
+    className: `song-sketch ${SKETCH_ANIM[b.id] || ''}`
   }), b.h && /*#__PURE__*/React.createElement("h2", {
     className: "song-h"
   }, b.h), (b.lines || []).map((l, li) => /*#__PURE__*/React.createElement(SongLine, {
@@ -545,8 +1023,15 @@ const SongText = ({
     line: l,
     partId: part.id,
     k: `${part.id}-${bi}-${li}`
-  }))))), /*#__PURE__*/React.createElement("nav", {
-    className: "flex justify-between items-center gap-3 border-t border-white/5 pt-8 mb-10 text-base",
+  })), part.id === 'guf' && b.h && /*#__PURE__*/React.createElement("button", {
+    onClick: () => shareBlock(b),
+    className: "song-share no-print",
+    "aria-label": `שיתוף: ${b.h.replace(/:\s*$/, '')}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Share2",
+    size: 14
+  }), " \u05E9\u05D9\u05EA\u05D5\u05E3")))), /*#__PURE__*/React.createElement("nav", {
+    className: "flex justify-between items-center gap-3 border-t border-white/5 pt-8 mb-10 text-base no-print",
     "aria-label": "\u05D7\u05DC\u05E7\u05D9 \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF"
   }, prevPart ? /*#__PURE__*/React.createElement("a", {
     href: PART_PATHS[prevPart.id],
@@ -555,11 +1040,15 @@ const SongText = ({
     href: PART_PATHS[nextPart.id],
     className: "px-4 py-2 rounded-full border border-white/15 text-stone-200 hover:bg-white/5"
   }, nextPart.title, " \u2190") : /*#__PURE__*/React.createElement("span", null)), /*#__PURE__*/React.createElement("div", {
-    className: "text-center"
+    className: "text-center no-print flex flex-wrap gap-3 justify-center"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onOpenBook,
     className: "px-6 py-2.5 rounded-full border border-white/20 text-stone-200 hover:bg-white/5 text-base"
-  }, "\u05DC\u05E2\u05D9\u05D5\u05DF \u05D1\u05E2\u05DE\u05D5\u05D3\u05D9 \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF \u05D4\u05DE\u05E2\u05D5\u05E6\u05D1\u05D9\u05DD"))), showTop && /*#__PURE__*/React.createElement("button", {
+  }, "\u05DC\u05E2\u05D9\u05D5\u05DF \u05D1\u05E2\u05DE\u05D5\u05D3\u05D9 \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF \u05D4\u05DE\u05E2\u05D5\u05E6\u05D1\u05D9\u05DD"), /*#__PURE__*/React.createElement("a", {
+    href: "/booklet.pdf",
+    download: "\u05E9\u05D9\u05E8\u05EA-\u05D4\u05D2\u05D5\u05E3.pdf",
+    className: "px-6 py-2.5 rounded-full border border-white/20 text-stone-200 hover:bg-white/5 text-base"
+  }, "\u05D4\u05D5\u05E8\u05D3\u05EA \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF (PDF)"))), showTop && /*#__PURE__*/React.createElement("button", {
     onClick: () => window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -569,6 +1058,22 @@ const SongText = ({
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "ArrowUp",
     size: 20
+  })));
+};
+const InspirePage = () => {
+  const [pick, setPick] = useState(null);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(BodyInspiration, {
+    standalone: true,
+    pick: pick
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "mt-10 bg-stone-900/30 border border-white/5 rounded-2xl p-6 md:p-8"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl md:text-2xl font-serif font-bold mb-5 text-white"
+  }, "\u05D0\u05D5 \u05D1\u05D7\u05E8\u05D5 \u05DE\u05EA\u05D5\u05DA \u05DE\u05E4\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement(BodyMap, {
+    onPick: (id, name) => setPick({
+      name,
+      n: Date.now()
+    })
   })));
 };
 const App = ({
@@ -628,9 +1133,11 @@ const App = ({
     className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-stone-900 rounded-full blur-[100px] opacity-30 pointer-events-none"
   }), /*#__PURE__*/React.createElement("div", {
     className: "mb-8 animate-fade-in relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "anim-breathe-slow"
   }, /*#__PURE__*/React.createElement(Logo, {
     className: "w-32 h-32 md:w-48 md:h-48 shadow-lg"
-  })), /*#__PURE__*/React.createElement("h1", {
+  }))), /*#__PURE__*/React.createElement("h1", {
     className: "text-5xl md:text-7xl font-bold text-white mb-6 font-serif tracking-tighter leading-none uppercase text-right md:text-center"
   }, "\u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3"), /*#__PURE__*/React.createElement("p", {
     className: "text-xl md:text-2xl text-stone-500 max-w-2xl mb-12 font-serif italic font-light px-2 text-right md:text-center leading-relaxed"
@@ -691,9 +1198,7 @@ const App = ({
     className: "text-4xl font-serif font-bold text-center mb-4 text-white tracking-tight"
   }, "\u05D4\u05E9\u05E8\u05D0\u05D4 \u05D0\u05D9\u05E9\u05D9\u05EA \u05DE\u05E4\u05E8\u05E7 \u05E9\u05D9\u05E8\u05D4"), /*#__PURE__*/React.createElement("p", {
     className: "text-lg text-stone-400 font-light text-center mb-10 leading-relaxed"
-  }, "\u05DB\u05EA\u05D1\u05D5 \u05D0\u05D1\u05E8 \u05D1\u05D2\u05D5\u05E3 \u05D0\u05D5 \u05EA\u05D7\u05D5\u05E9\u05D4 \u05E9\u05DE\u05D1\u05E7\u05E9\u05EA \u05EA\u05E9\u05D5\u05DE\u05EA \u05DC\u05D1, \u05D5\u05E7\u05D1\u05DC\u05D5 \u05E4\u05E1\u05D5\u05E7 \u05DE\u05EA\u05D5\u05DA \u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3, \u05DE\u05D9\u05DC\u05D9\u05DD \u05E9\u05DC \u05D4\u05E9\u05E8\u05D0\u05D4 \u05D5\u05EA\u05E8\u05D2\u05D5\u05DC \u05E0\u05D5\u05DB\u05D7\u05D5\u05EA \u05E7\u05E6\u05E8."), /*#__PURE__*/React.createElement(BodyInspiration, {
-    standalone: true
-  })), view === 'about' && /*#__PURE__*/React.createElement("div", {
+  }, "\u05DB\u05EA\u05D1\u05D5 \u05D0\u05D1\u05E8 \u05D1\u05D2\u05D5\u05E3 \u05D0\u05D5 \u05EA\u05D7\u05D5\u05E9\u05D4 \u05E9\u05DE\u05D1\u05E7\u05E9\u05EA \u05EA\u05E9\u05D5\u05DE\u05EA \u05DC\u05D1, \u05D5\u05E7\u05D1\u05DC\u05D5 \u05E4\u05E1\u05D5\u05E7 \u05DE\u05EA\u05D5\u05DA \u05E9\u05D9\u05E8\u05EA \u05D4\u05D2\u05D5\u05E3, \u05DE\u05D9\u05DC\u05D9\u05DD \u05E9\u05DC \u05D4\u05E9\u05E8\u05D0\u05D4 \u05D5\u05EA\u05E8\u05D2\u05D5\u05DC \u05E0\u05D5\u05DB\u05D7\u05D5\u05EA \u05E7\u05E6\u05E8."), /*#__PURE__*/React.createElement(InspirePage, null)), view === 'about' && /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto px-4 py-16 text-center text-right"
   }, /*#__PURE__*/React.createElement(Logo, {
     className: "w-16 h-16 mx-auto mb-8 shadow-md"
