@@ -18,6 +18,7 @@
     <meta property="og:image:alt" content="הלוגו של שירת הגוף: שתי דמויות סביב הכיתוב שירת הגוף">
     <meta name="twitter:card" content="summary_large_image">
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","name":"פרקי תרגול ומחשבה","url":"https://shirathaguf.netlify.app/tirgul/","description":"מי אני ומה היחס שלי לגוף שלי? תרגילי השקטה והקשבה לגוף ולאברים, צלם אלוהים, ובין שירת הגוף לשירת הבריאה – פרקי תרגול ומחשבה.","inLanguage":"he","isPartOf":{"@type":"WebSite","name":"שירת הגוף","alternateName":"Shirat Haguf","url":"https://shirathaguf.netlify.app/","inLanguage":"he"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"שירת הגוף","item":"https://shirathaguf.netlify.app/"},{"@type":"ListItem","position":2,"name":"פרקי תרגול ומחשבה","item":"https://shirathaguf.netlify.app/tirgul/"}]}]}</script>
+    <script>try{if(localStorage.getItem('hc')==='1')document.documentElement.classList.add('hc')}catch(e){}</script>
     <script>(function(){var h=location.hash;if(h.indexOf("#song")!==0)return;var id=decodeURIComponent(h.split("/")[1]||"");var P={guf:"/shirat-haguf/",nishmat:"/nishmat-kol-chai/",briah:"/shirat-habriah/",tikun:"/tikun-hanefesh/"};var part=id.split("-")[0];var path=P[part]||P.guf;location.replace(path+(id&&id!==part?"#"+id:""));})();</script>
     <meta name="theme-color" content="#000000">
     <meta name="google-site-verification" content="F4_tJPBr2MUcu1RdvGLkGyROzrb8zL1cTDWVDAc5kn0">
@@ -41,6 +42,42 @@
         .song-source { font-family: 'Assistant', sans-serif; font-size: 0.7em; color: #78716c; white-space: nowrap; }
         .song-anchor { scroll-margin-top: 7rem; }
         .song-closing { text-align: center; padding-top: 2em; color: #e7e5e4; }
+        .song-share { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.4em; font-family: 'Assistant', sans-serif; font-size: 0.85rem; color: #78716c; }
+        .song-share:hover { color: #e7e5e4; }
+        /* מפת הגוף */
+        .body-map .map-dot { cursor: pointer; }
+        .map-dot-off { fill: #e7e5e4; filter: drop-shadow(0 0 4px rgba(255,255,255,0.9)); animation: dotGlow 3.2s ease-in-out infinite; animation-delay: inherit; }
+        .map-dot-on { fill: #fff; filter: drop-shadow(0 0 8px #fff); }
+        .body-map .map-dot:hover .map-dot-off, .body-map .map-dot:focus .map-dot-off { fill: #fff; }
+        @keyframes dotGlow { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+        /* תנועה עדינה: לב פועם, ריאות נושמות, לוגו נושם */
+        .anim-pulse { animation: sketchPulse 3.4s ease-in-out infinite; transform-origin: center; }
+        .anim-breathe { animation: sketchBreathe 6s ease-in-out infinite; transform-origin: center; }
+        .anim-breathe-slow { animation: sketchBreathe 9s ease-in-out infinite; }
+        @keyframes sketchPulse { 0%, 30%, 100% { transform: scale(1); } 10% { transform: scale(1.045); } 20% { transform: scale(1.015); } }
+        @keyframes sketchBreathe { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.05); opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .anim-pulse, .anim-breathe, .anim-breathe-slow, .map-dot-off { animation: none !important; } }
+        /* ניגודיות גבוהה */
+        .hc body { color: #fff; }
+        .hc .song-text, .hc .song-closing { color: #fff; }
+        .hc .song-source, .hc .song-share { color: #e7e5e4; }
+        .hc .song-block { border-bottom-color: rgba(255,255,255,0.3); }
+        .hc .text-stone-300, .hc .text-stone-400, .hc .text-stone-500, .hc .text-stone-600 { color: #f5f5f4 !important; }
+        .hc .song-sketch { opacity: 1; }
+        /* הדפסה */
+        @media print {
+            @page { margin: 16mm 14mm; }
+            html, body { background: #fff !important; }
+            * { color: #000 !important; background: transparent !important; box-shadow: none !important; text-shadow: none !important; }
+            nav, footer, button, .no-print, .fixed { display: none !important; }
+            main { padding-top: 0 !important; }
+            .song-text { font-size: 13pt !important; line-height: 1.8; }
+            .song-block { break-inside: avoid; border-bottom: 1px solid #ccc !important; }
+            .song-sketch { filter: invert(1); opacity: 1 !important; width: 22mm !important; height: 22mm !important; animation: none !important; }
+            .song-source { color: #555 !important; }
+            a { text-decoration: none !important; }
+            .sticky { position: static !important; }
+        }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1c1917; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
@@ -71,6 +108,6 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" defer></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" defer></script>
     <script src="https://unpkg.com/lucide@latest" defer></script>
-    <script src="/app.js?v=ce62c44f68" defer></script>
+    <script src="/app.js?v=b1f658d3a0" defer></script>
 </body>
 </html>
