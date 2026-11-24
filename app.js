@@ -790,7 +790,7 @@ const SongText = ({
 }) => {
   const [tocOpen, setTocOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(null);
   const [shareCard, setShareCard] = useState(null);
   const [hc, toggleHc] = useHighContrast();
   const [size, setSize] = useState(() => {
@@ -873,7 +873,7 @@ const SongText = ({
     onClick: () => {
       setTocOpen(o => !o);
       setMapOpen(false);
-      setMenuOpen(false);
+      setMenuOpen(null);
     },
     className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5"
   }, /*#__PURE__*/React.createElement(Icon, {
@@ -883,7 +883,7 @@ const SongText = ({
     onClick: () => {
       setMapOpen(o => !o);
       setTocOpen(false);
-      setMenuOpen(false);
+      setMenuOpen(null);
     },
     className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5"
   }, /*#__PURE__*/React.createElement(Icon, {
@@ -894,14 +894,11 @@ const SongText = ({
   }, /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setMenuOpen(o => !o),
-    "aria-label": "\u05EA\u05E6\u05D5\u05D2\u05D4 \u05D5\u05D4\u05D3\u05E4\u05E1\u05D4",
-    "aria-expanded": menuOpen,
+    onClick: () => setMenuOpen(m => m === 'view' ? null : 'view'),
+    "aria-label": "\u05EA\u05E6\u05D5\u05D2\u05D4",
+    "aria-expanded": menuOpen === 'view',
     className: "w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 font-serif font-bold"
-  }, "\u05D0"), menuOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-40",
-    onClick: () => setMenuOpen(false)
-  }), menuOpen && /*#__PURE__*/React.createElement("div", {
+  }, "\u05D0"), menuOpen === 'view' && /*#__PURE__*/React.createElement("div", {
     className: "absolute left-0 top-11 w-56 bg-stone-950 border border-white/15 rounded-xl p-2 shadow-2xl animate-fade-in z-50"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between px-2 py-1.5"
@@ -926,9 +923,21 @@ const SongText = ({
     className: `w-9 h-5 rounded-full p-0.5 flex ${hc ? 'bg-white justify-end' : 'bg-white/20 justify-start'}`
   }, /*#__PURE__*/React.createElement("span", {
     className: "w-4 h-4 rounded-full bg-black"
-  }))), /*#__PURE__*/React.createElement("button", {
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setMenuOpen(m => m === 'print' ? null : 'print'),
+    "aria-label": "\u05D4\u05D3\u05E4\u05E1\u05D4 \u05D5\u05D4\u05D5\u05E8\u05D3\u05D4",
+    "aria-expanded": menuOpen === 'print',
+    className: "w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 flex items-center justify-center"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Printer",
+    size: 16
+  })), menuOpen === 'print' && /*#__PURE__*/React.createElement("div", {
+    className: "absolute left-0 top-11 w-56 bg-stone-950 border border-white/15 rounded-xl p-2 shadow-2xl animate-fade-in z-50"
+  }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
-      setMenuOpen(false);
+      setMenuOpen(null);
       setTimeout(printWithImages, 50);
     },
     className: "w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"
@@ -938,11 +947,15 @@ const SongText = ({
   }), " \u05D4\u05D3\u05E4\u05E1\u05EA \u05D4\u05D8\u05E7\u05E1\u05D8"), /*#__PURE__*/React.createElement("a", {
     href: "/booklet.pdf",
     download: "\u05E9\u05D9\u05E8\u05EA-\u05D4\u05D2\u05D5\u05E3.pdf",
+    onClick: () => setMenuOpen(null),
     className: "w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Download",
     size: 16
-  }), " \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF \u05D4\u05DE\u05E2\u05D5\u05E6\u05D1 (PDF)"))), /*#__PURE__*/React.createElement("button", {
+  }), " \u05D4\u05D5\u05E8\u05D3\u05EA \u05D4\u05E1\u05E4\u05E8\u05D5\u05DF \u05D4\u05DE\u05E2\u05D5\u05E6\u05D1 (PDF)"))), menuOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-40",
+    onClick: () => setMenuOpen(null)
+  }), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenBook,
     className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5"
   }, /*#__PURE__*/React.createElement(Icon, {

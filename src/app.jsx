@@ -729,7 +729,7 @@
         const SongText = ({ data, partId, onOpenBook }) => {
             const [tocOpen, setTocOpen] = useState(false);
             const [mapOpen, setMapOpen] = useState(false);
-            const [menuOpen, setMenuOpen] = useState(false);
+            const [menuOpen, setMenuOpen] = useState(null);
             const [shareCard, setShareCard] = useState(null);
             const [hc, toggleHc] = useHighContrast();
             const [size, setSize] = useState(() => {
@@ -786,18 +786,17 @@
                     <div className="sticky top-14 z-40 bg-black/95 backdrop-blur-md border-b border-white/5 no-print">
                         <div className="max-w-3xl mx-auto px-2 h-12 flex items-center justify-between gap-1.5 text-sm">
                             <div className="flex items-center gap-1.5">
-                                <button onClick={() => { setTocOpen(o => !o); setMapOpen(false); setMenuOpen(false); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5">
+                                <button onClick={() => { setTocOpen(o => !o); setMapOpen(false); setMenuOpen(null); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5">
                                     <Icon name={tocOpen ? 'X' : 'List'} size={16} /> תוכן
                                 </button>
-                                <button onClick={() => { setMapOpen(o => !o); setTocOpen(false); setMenuOpen(false); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5">
+                                <button onClick={() => { setMapOpen(o => !o); setTocOpen(false); setMenuOpen(null); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5">
                                     <Icon name={mapOpen ? 'X' : 'PersonStanding'} size={16} /> מפה
                                 </button>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <div className="relative">
-                                    <button onClick={() => setMenuOpen(o => !o)} aria-label="תצוגה והדפסה" aria-expanded={menuOpen} className="w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 font-serif font-bold">א</button>
-                                    {menuOpen && <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)}></div>}
-                                    {menuOpen && (
+                                    <button onClick={() => setMenuOpen(m => m === 'view' ? null : 'view')} aria-label="תצוגה" aria-expanded={menuOpen === 'view'} className="w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 font-serif font-bold">א</button>
+                                    {menuOpen === 'view' && (
                                         <div className="absolute left-0 top-11 w-56 bg-stone-950 border border-white/15 rounded-xl p-2 shadow-2xl animate-fade-in z-50">
                                             <div className="flex items-center justify-between px-2 py-1.5">
                                                 <span className="text-stone-400">גודל טקסט</span>
@@ -809,11 +808,19 @@
                                             <button onClick={toggleHc} role="switch" aria-checked={hc} className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200">
                                                 <span>ניגודיות גבוהה</span><span className={`w-9 h-5 rounded-full p-0.5 flex ${hc ? 'bg-white justify-end' : 'bg-white/20 justify-start'}`}><span className="w-4 h-4 rounded-full bg-black"></span></span>
                                             </button>
-                                            <button onClick={() => { setMenuOpen(false); setTimeout(printWithImages, 50); }} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Printer" size={16} /> הדפסת הטקסט</button>
-                                            <a href="/booklet.pdf" download="שירת-הגוף.pdf" className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Download" size={16} /> הספרון המעוצב (PDF)</a>
                                         </div>
                                     )}
                                 </div>
+                                <div className="relative">
+                                    <button onClick={() => setMenuOpen(m => m === 'print' ? null : 'print')} aria-label="הדפסה והורדה" aria-expanded={menuOpen === 'print'} className="w-9 h-9 rounded-full border border-white/15 text-stone-200 hover:bg-white/5 flex items-center justify-center"><Icon name="Printer" size={16} /></button>
+                                    {menuOpen === 'print' && (
+                                        <div className="absolute left-0 top-11 w-56 bg-stone-950 border border-white/15 rounded-xl p-2 shadow-2xl animate-fade-in z-50">
+                                            <button onClick={() => { setMenuOpen(null); setTimeout(printWithImages, 50); }} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Printer" size={16} /> הדפסת הטקסט</button>
+                                            <a href="/booklet.pdf" download="שירת-הגוף.pdf" onClick={() => setMenuOpen(null)} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-stone-200"><Icon name="Download" size={16} /> הורדת הספרון המעוצב (PDF)</a>
+                                        </div>
+                                    )}
+                                </div>
+                                {menuOpen && <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(null)}></div>}
                                 <button onClick={onOpenBook} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-stone-200 hover:bg-white/5">
                                     <Icon name="BookOpen" size={16} /> ספרון
                                 </button>
